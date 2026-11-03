@@ -15,6 +15,7 @@ import {
   lowConsumptionNotRecommendedAssessment,
 } from "./data/mockAssessment"
 import { AssessmentState, BillData, HouseholdUsage, LocationRoof } from "./types/assessment"
+import { api } from "./services/api"
 
 export const App: React.FC = () => {
   const [scenario, setScenario] = useState<"attractive" | "not-recommended">("attractive")
@@ -59,6 +60,23 @@ export const App: React.FC = () => {
   const handleLocationRoofConfirm = (updatedRoof: LocationRoof) => {
     setAssessment((prev) => ({ ...prev, locationRoof: updatedRoof }))
     setCurrentStep(5)
+    // Asynchronously enrich recommendation from engine
+    api
+      .fetchSolarRecommendation({
+        monthly_consumption_kwh: assessment.bill.units || 400,
+        sanctioned_load_kw: 5.0,
+        roof_area_sqft: updatedRoof.approxAreaSqFt || 500,
+        city: updatedRoof.city || "Bangalore",
+        weekly_outage_hours: assessment.usage.avgOutageHoursPerWeek || 0,
+        critical_load_fraction: 0.35,
+        roof_type: updatedRoof.roofType || "RCC Flat",
+      })
+      .then((rec) => {
+        setAssessment((prev) => ({ ...prev, recommendation: rec }))
+      })
+      .catch((err) => {
+        console.warn("Could not enrich solar recommendation:", err)
+      })
   }
 
   const handleExport = () => {

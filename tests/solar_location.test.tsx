@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { LocationRoofStep } from "../src/features/assessment/LocationRoofStep"
 import { LocationRoof } from "../src/types/assessment"
@@ -76,3 +76,4 @@ describe("Solar Location & Rooftop Step", () => {
     expect(await screen.findByText(/Heavy shading derates solar output by ~30%/i)).toBeInTheDocument()
   })
 })
+

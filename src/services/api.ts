@@ -2,7 +2,14 @@
  * SolarWise Frontend API Client Service
  */
 
-import { BillData } from "../types/assessment"
+import {
+  BatteryEquipment,
+  BillData,
+  InverterEquipment,
+  PanelEquipment,
+  SolarRecommendation,
+  SystemType,
+} from "../types/assessment"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1"
 
@@ -374,6 +381,275 @@ export const api = {
       engineering_assumptions: [
         `System size: ${cap} kWp DC capacity`,
         `Specific yield: ${baseSpecificYield.toFixed(0)} kWh/kWp/year`,
+      ],
+    }
+  },
+
+  /**
+   * Fetch verified solar panel catalog.
+   */
+  async fetchPanels(): Promise<PanelEquipment[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/panels`)
+      if (response.ok) {
+        const json = await response.json()
+        return json.data
+      }
+    } catch (err) {
+      console.warn("Backend panels offline, using fallback catalog:", err)
+    }
+    return [
+      {
+        id: "adani-mono-perc-440",
+        manufacturer: "Adani Solar",
+        model: "Elan Shine 440W",
+        technology: "Mono PERC",
+        rated_power_w: 440,
+        efficiency_pct: 20.9,
+        dimensions_mm: { length: 2094, width: 1038, thickness: 35 },
+        area_sqm: 2.17,
+        temp_coefficient_pmax: -0.36,
+        warranty_years_product: 12,
+        warranty_years_performance: 25,
+        estimated_price_inr: 9240,
+        description: "Premium high-efficiency half-cut monocrystalline cell module.",
+      },
+      {
+        id: "waaree-topcon-540",
+        manufacturer: "Waaree Energies",
+        model: "Arka TopCon 540W",
+        technology: "TopCon Bifacial",
+        rated_power_w: 540,
+        efficiency_pct: 21.6,
+        dimensions_mm: { length: 2278, width: 1134, thickness: 35 },
+        area_sqm: 2.58,
+        temp_coefficient_pmax: -0.30,
+        warranty_years_product: 15,
+        warranty_years_performance: 30,
+        estimated_price_inr: 12420,
+        description: "Next-generation N-Type TopCon bifacial module delivering superior low-light yields.",
+      },
+    ]
+  },
+
+  /**
+   * Fetch verified solar inverter catalog.
+   */
+  async fetchInverters(): Promise<InverterEquipment[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/inverters`)
+      if (response.ok) {
+        const json = await response.json()
+        return json.data
+      }
+    } catch (err) {
+      console.warn("Backend inverters offline, using fallback catalog:", err)
+    }
+    return [
+      {
+        id: "solis-1p-3k",
+        manufacturer: "Solis",
+        model: "S6-GR1P3K",
+        inverter_type: "string",
+        rated_output_power_kw: 3.0,
+        phase: "single-phase",
+        mppt_trackers: 2,
+        max_efficiency_pct: 97.7,
+        euro_efficiency_pct: 97.1,
+        max_recommended_pv_power_kw: 4.5,
+        max_dc_voltage_v: 600,
+        battery_compatible: false,
+        warranty_years: 5,
+        estimated_price_inr: 31000,
+        description: "Dual MPPT single-phase grid-tied string inverter.",
+      },
+      {
+        id: "growatt-min-5000",
+        manufacturer: "Growatt",
+        model: "MIN 5000TL-X",
+        inverter_type: "string",
+        rated_output_power_kw: 5.0,
+        phase: "single-phase",
+        mppt_trackers: 2,
+        max_efficiency_pct: 98.4,
+        euro_efficiency_pct: 97.5,
+        max_recommended_pv_power_kw: 7.0,
+        max_dc_voltage_v: 550,
+        battery_compatible: false,
+        warranty_years: 5,
+        estimated_price_inr: 44000,
+        description: "High-efficiency single-phase residential string inverter.",
+      },
+    ]
+  },
+
+  /**
+   * Fetch verified battery catalog.
+   */
+  async fetchBatteries(): Promise<BatteryEquipment[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/batteries`)
+      if (response.ok) {
+        const json = await response.json()
+        return json.data
+      }
+    } catch (err) {
+      console.warn("Backend batteries offline, using fallback catalog:", err)
+    }
+    return [
+      {
+        id: "pylontech-us3000c",
+        manufacturer: "Pylontech",
+        model: "US3000C",
+        chemistry: "LiFePO4",
+        nominal_capacity_kwh: 3.55,
+        usable_capacity_kwh: 3.2,
+        depth_of_discharge_pct: 90.0,
+        cycle_life: 6000,
+        voltage_v: 48.0,
+        max_continuous_discharge_kw: 1.8,
+        round_trip_efficiency_pct: 95.0,
+        warranty_years: 10,
+        estimated_price_inr: 85000,
+        description: "Modular 48V Lithium Iron Phosphate rack battery unit.",
+      },
+    ]
+  },
+
+  /**
+   * Calculate engineered solar system sizing, equipment matching, and technical constraints.
+   */
+  async fetchSolarRecommendation(params: {
+    monthly_consumption_kwh: number
+    sanctioned_load_kw?: number
+    roof_area_sqft: number
+    city?: string
+    weekly_outage_hours?: number
+    critical_load_fraction?: number
+    budget_inr?: number
+    prefer_microinverter?: boolean
+    roof_type?: string
+  }): Promise<SolarRecommendation> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/solar/recommend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      })
+      if (response.ok) {
+        const json = await response.json()
+        const d = json.data
+        return {
+          recommendedCapacityKw: d.recommended_capacity_kw,
+          panelCount: d.panel_count,
+          panelWattage: d.panel_wattage,
+          systemType: (d.system_type === "On-Grid" ? "On-grid" : d.system_type) as SystemType,
+          inverterRatingKw: d.inverter_rating_kw,
+          batteryRecommended: d.battery_recommended,
+          batteryCapacityKwh: d.battery_capacity_kwh,
+          estimatedCostMin: d.estimated_cost_min,
+          estimatedCostMax: d.estimated_cost_max,
+          annualGenerationKwh: d.annual_generation_kwh,
+          keyReasons: d.key_reasons,
+          tradeOffs: d.trade_offs,
+          alternativeSystem: {
+            capacityKw: d.alternative_system.capacity_kw,
+            systemType: (d.alternative_system.system_type === "On-Grid" ? "On-grid" : "Hybrid") as SystemType,
+            reason: d.alternative_system.reason,
+            estimatedCost: d.alternative_system.estimated_cost,
+            panelCount: d.alternative_system.panel_count,
+          },
+          panelModel: d.panel_model,
+          inverterModel: d.inverter_model,
+          batteryModel: d.battery_model,
+          dcAcRatio: d.dc_ac_ratio,
+          roofAreaRequiredSqFt: d.roof_area_required_sqft,
+          roofUtilizationPct: d.roof_utilization_pct,
+          technicalConstraints: d.technical_constraints,
+        }
+      }
+    } catch (err) {
+      console.warn("Backend recommendation offline, calculating deterministic fallback:", err)
+    }
+
+    // Local deterministic fallback calculation
+    const monthlyUnits = params.monthly_consumption_kwh || 400
+    const annualUnits = monthlyUnits * 12
+    const roofArea = params.roof_area_sqft || 500
+    const weeklyOutages = params.weekly_outage_hours || 0
+
+    const targetKw = annualUnits / 1450
+    const maxRoofKw = roofArea / 85
+    const governingKw = Math.max(1.0, Math.min(targetKw, maxRoofKw))
+    const isHybrid = weeklyOutages >= 3.0
+
+    const panelWattage = maxRoofKw < targetKw ? 540 : 440
+    const panelCount = Math.max(2, Math.round((governingKw * 1000) / panelWattage))
+    const actualKw = Number(((panelCount * panelWattage) / 1000).toFixed(2))
+    const annualGen = Math.round(actualKw * 1450)
+
+    const baseCostPerKw = actualKw <= 3 ? 58000 : 52000
+    let costMin = actualKw * baseCostPerKw
+    let costMax = actualKw * (baseCostPerKw + 6000)
+    if (isHybrid) {
+      costMin += 95000
+      costMax += 120000
+    }
+
+    const singlePanelSqFt = (panelWattage === 540 ? 2.58 : 2.17) * 10.7639
+    const reqArea = Math.round(panelCount * singlePanelSqFt * 1.35)
+    const utilPct = Math.min(100, Math.round((reqArea / roofArea) * 100))
+
+    return {
+      recommendedCapacityKw: actualKw,
+      panelCount,
+      panelWattage,
+      systemType: isHybrid ? "Hybrid" : "On-grid",
+      inverterRatingKw: actualKw <= 3 ? 3.0 : 5.0,
+      batteryRecommended: isHybrid,
+      batteryCapacityKwh: isHybrid ? 5.12 : 0,
+      estimatedCostMin: Math.round(costMin),
+      estimatedCostMax: Math.round(costMax),
+      annualGenerationKwh: annualGen,
+      dcAcRatio: Number((actualKw / (actualKw <= 3 ? 3.0 : 5.0)).toFixed(2)),
+      roofAreaRequiredSqFt: reqArea,
+      roofUtilizationPct: utilPct,
+      keyReasons: [
+        `Sized to offset ${Math.min(100, Math.round((annualGen / annualUnits) * 100))}% of your annual electricity consumption (${annualUnits} kWh/yr).`,
+        `Selected ${panelWattage}W Mono PERC modules offering high performance and low degradation.`,
+        isHybrid
+          ? `Included LiFePO4 battery backup due to ${weeklyOutages} hours/week average power cuts.`
+          : `Pure On-Grid configuration minimizes equipment cost with high daytime self-consumption.`,
+      ],
+      tradeOffs: [
+        isHybrid
+          ? "Hybrid battery storage adds ₹95k–₹1.2L upfront capital expense."
+          : "Grid-tied inverter will shut down during power cuts for line worker safety.",
+      ],
+      alternativeSystem: {
+        capacityKw: Number((actualKw * 0.7).toFixed(1)),
+        systemType: "On-grid",
+        reason: "Smaller budget-optimized installation covering only baseline daytime refrigeration and fans.",
+      },
+      technicalConstraints: [
+        {
+          name: "Rooftop Space Clearance",
+          status: reqArea <= roofArea ? "pass" : "warning",
+          value: `${reqArea} sq ft required / ${roofArea} sq ft available`,
+          message: `Array occupies ${utilPct}% of shadow-free rooftop area with maintenance walkways.`,
+        },
+        {
+          name: "Inverter DC/AC Loading",
+          status: "pass",
+          value: `${(actualKw / (actualKw <= 3 ? 3.0 : 5.0)).toFixed(2)}x`,
+          message: "Standard array loading ensures optimal low-light morning harvest.",
+        },
+        {
+          name: "Interconnection Phase Standard",
+          status: "pass",
+          value: actualKw > 5 ? "Three-Phase 415V" : "Single-Phase 230V",
+          message: actualKw > 5 ? "Mandates 3-phase connection." : "Single-phase supply compatible.",
+        },
       ],
     }
   },

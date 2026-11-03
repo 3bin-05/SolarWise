@@ -5,7 +5,6 @@ import {
   ArrowRight,
   ArrowLeft,
   Calculator,
-  Info,
 } from "lucide-react"
 import { BillData } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
