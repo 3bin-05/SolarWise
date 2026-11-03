@@ -1,23 +1,65 @@
-import React, { useState } from "react"
-import { Sun, Moon, ArrowRight, ArrowLeft, Info } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import {
+  Sun,
+  Moon,
+  ArrowRight,
+  ArrowLeft,
+  Info,
+  AlertTriangle,
+  Zap,
+  TrendingUp,
+} from "lucide-react"
 import { HouseholdUsage } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/Card"
 import { Input } from "../../components/ui/Input"
 import { Label } from "../../components/ui/Label"
+import { Badge } from "../../components/ui/Badge"
+import { api, EnergyAnalysisApiResponse } from "../../services/api"
 
 export interface HouseholdUsageStepProps {
   initialUsage: HouseholdUsage
+  providerName?: string
   onConfirm: (updatedUsage: HouseholdUsage) => void
   onBack: () => void
 }
 
 export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
   initialUsage,
+  providerName = "generic",
   onConfirm,
   onBack,
 }) => {
   const [usage, setUsage] = useState<HouseholdUsage>(initialUsage)
+  const [analysis, setAnalysis] = useState<EnergyAnalysisApiResponse | null>(null)
+
+  useEffect(() => {
+    let isCancelled = false
+    const runAnalysis = async () => {
+      const res = await api.analyzeEnergy({
+        monthly_units: usage.monthlyUnits,
+        daytime_percentage: usage.daytimePercentage,
+        has_frequent_outages: usage.hasFrequentOutages,
+        avg_outage_hours_per_week: usage.avgOutageHoursPerWeek,
+        provider: providerName,
+      })
+      if (!isCancelled) {
+        setAnalysis(res)
+      }
+    }
+
+    const timer = setTimeout(runAnalysis, 200)
+    return () => {
+      isCancelled = true
+      clearTimeout(timer)
+    }
+  }, [
+    usage.monthlyUnits,
+    usage.daytimePercentage,
+    usage.hasFrequentOutages,
+    usage.avgOutageHoursPerWeek,
+    providerName,
+  ])
 
   const handleDaytimeChange = (newDaytime: number) => {
     setUsage((prev) => ({
@@ -27,26 +69,84 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
     }))
   }
 
+  const daytimeUnits = analysis?.daytime_units_monthly ?? (usage.monthlyUnits * usage.daytimePercentage) / 100
+  const nighttimeUnits = analysis?.nighttime_units_monthly ?? (usage.monthlyUnits * usage.nighttimePercentage) / 100
+  const annualUnits = analysis?.annual_consumption_kwh ?? usage.monthlyUnits * 12
+
   return (
     <div className="max-w-2xl mx-auto py-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Daytime vs. Nighttime Electricity Usage</CardTitle>
-          <CardDescription>
-            Solar generation peaks from 9 AM to 4 PM. Your daytime consumption determines how much
-            solar power you self-consume directly without relying on discounted grid feed-in rates.
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-2xl">Daytime vs. Nighttime Electricity Usage</CardTitle>
+              <CardDescription>
+                Solar panels only generate during daylight hours. Your daytime consumption determines
+                how much solar electricity offsets high retail tariff slabs directly.
+              </CardDescription>
+            </div>
+            {analysis && (
+              <Badge variant={analysis.is_low_consumption ? "warning" : "default"}>
+                {analysis.consumption_tier}
+              </Badge>
+            )}
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Low Consumption Unviability Alert */}
+          {analysis?.unviability_warning && (
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">Solar Viability Advisory</p>
+                <p className="mt-0.5 leading-relaxed">{analysis.unviability_warning}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Monthly Units Quick Override */}
+          <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <Label>Baseline Monthly Consumption</Label>
+              <div className="text-xs text-neutral-500">
+                Extracted from bill or adjusted for typical monthly consumption
+              </div>
+            </div>
+            <div className="w-full sm:w-44">
+              <div className="relative">
+                <Input
+                  type="number"
+                  value={usage.monthlyUnits}
+                  onChange={(e) =>
+                    setUsage((prev) => ({
+                      ...prev,
+                      monthlyUnits: Math.max(0, Number(e.target.value) || 0),
+                    }))
+                  }
+                  className="font-bold text-base pr-12"
+                />
+                <span className="absolute right-3 top-2.5 text-xs text-neutral-400 font-semibold">
+                  kWh/mo
+                </span>
+              </div>
+            </div>
+          </div>
+
           {/* Daytime vs Nighttime Slider */}
           <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-4">
             <div className="flex items-center justify-between text-sm font-semibold">
               <span className="flex items-center gap-1.5 text-amber-700">
-                <Sun className="h-4 w-4" /> Daytime (6 AM - 6 PM): {usage.daytimePercentage}%
+                <Sun className="h-4 w-4 text-amber-600" /> Daytime: {usage.daytimePercentage}%
+                <span className="text-xs font-normal text-neutral-500 font-mono">
+                  ({daytimeUnits.toFixed(0)} kWh/mo)
+                </span>
               </span>
               <span className="flex items-center gap-1.5 text-indigo-700">
-                <Moon className="h-4 w-4" /> Nighttime (6 PM - 6 AM): {usage.nighttimePercentage}%
+                <Moon className="h-4 w-4 text-indigo-600" /> Nighttime: {usage.nighttimePercentage}%
+                <span className="text-xs font-normal text-neutral-500 font-mono">
+                  ({nighttimeUnits.toFixed(0)} kWh/mo)
+                </span>
               </span>
             </div>
 
@@ -60,23 +160,52 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
               className="w-full accent-emerald-600 cursor-pointer h-2 bg-neutral-200 rounded-lg"
             />
 
-            <div className="flex items-start gap-2 text-xs text-neutral-500 bg-white p-3 rounded-lg border border-neutral-200/80">
+            <div className="flex items-start gap-2 text-xs text-neutral-600 bg-white p-3 rounded-lg border border-neutral-200/80">
               <Info className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
               <span>
                 {usage.daytimePercentage >= 50
-                  ? "High daytime usage is optimal: your solar energy directly displaces costly retail tariff units."
-                  : "High nighttime usage: unless you install a battery or your utility offers 1:1 net metering, surplus solar is exported at lower compensation."}
+                  ? "Optimal daytime profile: Air conditioning, fans, and appliances consume power while the sun shines, maximizing avoided retail tariff savings."
+                  : "High nighttime usage: Surplus daylight solar will be exported to the grid at lower compensation unless a battery is installed."}
+              </span>
+            </div>
+          </div>
+
+          {/* Energy Summary Pills */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-3.5 rounded-lg border border-neutral-200 bg-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-emerald-600" />
+                <span className="text-neutral-600">Projected Annual Demand</span>
+              </div>
+              <span className="font-bold text-neutral-900 font-mono">
+                {annualUnits.toLocaleString()} kWh/yr
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-lg border border-neutral-200 bg-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-amber-600" />
+                <span className="text-neutral-600">Avoided Marginal Tariff</span>
+              </div>
+              <span className="font-bold text-emerald-700 font-mono">
+                ₹{analysis?.marginal_tariff_rate.toFixed(2) ?? "7.00"}/kWh
               </span>
             </div>
           </div>
 
           {/* Grid Outages */}
           <div className="space-y-3">
-            <Label>Power Cuts & Grid Outages</Label>
+            <Label>Power Cuts & Grid Outage Frequency</Label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setUsage((prev) => ({ ...prev, hasFrequentOutages: false }))}
+                onClick={() =>
+                  setUsage((prev) => ({
+                    ...prev,
+                    hasFrequentOutages: false,
+                    avgOutageHoursPerWeek: 0,
+                  }))
+                }
                 className={`p-3 rounded-xl border text-left text-sm transition-all cursor-pointer ${
                   !usage.hasFrequentOutages
                     ? "border-emerald-600 bg-emerald-50/60 font-semibold text-emerald-950"
@@ -89,7 +218,13 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
 
               <button
                 type="button"
-                onClick={() => setUsage((prev) => ({ ...prev, hasFrequentOutages: true }))}
+                onClick={() =>
+                  setUsage((prev) => ({
+                    ...prev,
+                    hasFrequentOutages: true,
+                    avgOutageHoursPerWeek: 6,
+                  }))
+                }
                 className={`p-3 rounded-xl border text-left text-sm transition-all cursor-pointer ${
                   usage.hasFrequentOutages
                     ? "border-emerald-600 bg-emerald-50/60 font-semibold text-emerald-950"
@@ -97,39 +232,43 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
                 }`}
               >
                 Frequent Outages (&gt;3 hrs/wk)
-                <p className="text-xs font-normal text-neutral-500 mt-1">
-                  Evaluate hybrid inverter with battery backup
-                </p>
+                <p className="text-xs font-normal text-neutral-500 mt-1">Hybrid inverter + battery storage option</p>
               </button>
             </div>
           </div>
 
-          {/* Budget */}
+          {/* Budget Limit */}
           <div>
-            <Label>Estimated Budget (Optional, ₹)</Label>
-            <Input
-              type="number"
-              placeholder="e.g. 200000"
-              value={usage.budget ?? ""}
-              onChange={(e) =>
-                setUsage((prev) => ({
-                  ...prev,
-                  budget: e.target.value ? Number(e.target.value) : null,
-                }))
-              }
-            />
+            <Label>Capital Budget Limit (Optional)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number"
+                placeholder="e.g. 250000"
+                value={usage.budget ?? ""}
+                onChange={(e) =>
+                  setUsage((prev) => ({
+                    ...prev,
+                    budget: e.target.value ? Number(e.target.value) : null,
+                  }))
+                }
+                className="pr-12"
+              />
+              <span className="absolute right-3 top-2.5 text-xs text-neutral-400 font-semibold">
+                INR (₹)
+              </span>
+            </div>
             <span className="text-[11px] text-neutral-500 mt-1 block">
-              Leave blank to calculate unconstrained optimal system sizing.
+              Leave blank to calculate the optimal engineering size without budget constraints.
             </span>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
+          {/* Navigation Bar */}
+          <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
             <Button variant="outline" size="md" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back
+              <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to Bill
             </Button>
             <Button size="md" onClick={() => onConfirm(usage)}>
-              Continue to Roof & Location <ArrowRight className="h-4 w-4 ml-1" />
+              Continue to Roof & Location <ArrowRight className="h-4 w-4 ml-1.5" />
             </Button>
           </div>
         </CardContent>

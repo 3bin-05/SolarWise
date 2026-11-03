@@ -140,6 +140,7 @@ export const App: React.FC = () => {
         {currentStep === 3 && (
           <HouseholdUsageStep
             initialUsage={assessment.usage}
+            providerName={assessment.bill.provider}
             onConfirm={handleUsageConfirm}
             onBack={() => setCurrentStep(2)}
           />
