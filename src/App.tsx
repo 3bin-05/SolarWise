@@ -1,130 +1,182 @@
-import React from "react"
-import { Sun, CheckCircle2, ShieldCheck, Zap } from "lucide-react"
+import React, { useState } from "react"
+import { Header } from "./components/layout/Header"
+import { Footer } from "./components/layout/Footer"
+import { Progress } from "./components/ui/Progress"
+import { LandingStep } from "./features/assessment/LandingStep"
+import { BillUploadStep } from "./features/assessment/BillUploadStep"
+import { BillConfirmStep } from "./features/assessment/BillConfirmStep"
+import { HouseholdUsageStep } from "./features/assessment/HouseholdUsageStep"
+import { LocationRoofStep } from "./features/assessment/LocationRoofStep"
+import { SolarRecommendationStep } from "./features/assessment/SolarRecommendationStep"
+import { FinancialTwinStep } from "./features/assessment/FinancialTwinStep"
+import { DecisionSummaryStep } from "./features/assessment/DecisionSummaryStep"
+import {
+  defaultAttractiveAssessment,
+  lowConsumptionNotRecommendedAssessment,
+} from "./data/mockAssessment"
+import { AssessmentState, BillData, HouseholdUsage, LocationRoof } from "./types/assessment"
 
 export const App: React.FC = () => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1"
-  const appEnv = import.meta.env.VITE_APP_ENV || "development"
+  const [scenario, setScenario] = useState<"attractive" | "not-recommended">("attractive")
+  const [assessment, setAssessment] = useState<AssessmentState>(defaultAttractiveAssessment)
+  const [currentStep, setCurrentStep] = useState<number>(0)
+  const totalSteps = 7
+
+  const handleSelectScenario = (selected: "attractive" | "not-recommended") => {
+    setScenario(selected)
+    setAssessment(
+      selected === "attractive"
+        ? defaultAttractiveAssessment
+        : lowConsumptionNotRecommendedAssessment
+    )
+    setCurrentStep(1)
+  }
+
+  const handleToggleScenario = () => {
+    const nextScenario = scenario === "attractive" ? "not-recommended" : "attractive"
+    handleSelectScenario(nextScenario)
+  }
+
+  const handleReset = () => {
+    setCurrentStep(0)
+  }
+
+  const handleBillConfirm = (updatedBill: BillData) => {
+    setAssessment((prev) => ({ ...prev, bill: updatedBill }))
+    setCurrentStep(3)
+  }
+
+  const handleUsageConfirm = (updatedUsage: HouseholdUsage) => {
+    setAssessment((prev) => ({ ...prev, usage: updatedUsage }))
+    setCurrentStep(4)
+  }
+
+  const handleLocationRoofConfirm = (updatedRoof: LocationRoof) => {
+    setAssessment((prev) => ({ ...prev, locationRoof: updatedRoof }))
+    setCurrentStep(5)
+  }
+
+  const handleExport = () => {
+    alert(
+      `Solar Feasibility Report (${
+        scenario === "attractive" ? "Attractive" : "Not Recommended"
+      } Scenario)\n\nSystem: ${assessment.recommendation.recommendedCapacityKw} kW\nVerdict: ${
+        assessment.decision.outcome
+      }\nSimple Payback: ${assessment.financial.simplePaybackYears} years\nConfidence: ${
+        assessment.decision.confidenceScore
+      }%\n\nFull PDF report generation will be connected in Phase 12.`
+    )
+  }
+
+  const stepLabels = [
+    "Overview",
+    "Upload Bill",
+    "Confirm Data",
+    "Household Usage",
+    "Roof & Location",
+    "Recommendation",
+    "Financial Twin",
+    "Verdict",
+  ]
+
+  const progressPercentage = currentStep === 0 ? 0 : Math.round((currentStep / totalSteps) * 100)
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 text-neutral-900 flex flex-col font-sans">
-      {/* Top Navigation */}
-      <header className="border-b border-neutral-200/80 bg-white/80 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-sm shadow-emerald-500/20">
-              <Sun className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="font-bold text-lg tracking-tight text-neutral-950">SolarWise</span>
-              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200/60">
-                Phase 0 Foundation
+    <div className="min-h-screen bg-neutral-50/60 text-neutral-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
+      <Header
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onReset={handleReset}
+        onScenarioToggle={currentStep > 0 ? handleToggleScenario : undefined}
+        scenarioName={
+          scenario === "attractive" ? "Standard Viable (420 kWh)" : "Low Usage (85 kWh)"
+        }
+      />
+
+      {/* Stepper Progress Bar */}
+      {currentStep > 0 && (
+        <div className="bg-white border-b border-neutral-200/80 sticky top-16 z-40">
+          <div className="max-w-4xl mx-auto px-4 py-2.5">
+            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 mb-1.5">
+              <span>
+                Step {currentStep} of {totalSteps}: {stepLabels[currentStep]}
               </span>
+              <span className="font-mono text-emerald-700">{progressPercentage}% Complete</span>
             </div>
-          </div>
-          <div className="flex items-center gap-4 text-sm text-neutral-600">
-            <span className="flex items-center gap-1.5 font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/50">
-              <CheckCircle2 className="h-4 w-4" /> System Ready
-            </span>
+            <Progress value={progressPercentage} className="h-1.5" />
           </div>
         </div>
-      </header>
+      )}
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-12 w-full">
-        {/* Hero Section */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 mb-4">
-            <Zap className="h-3.5 w-3.5 text-emerald-600" />
-            Objective Solar Feasibility Assessment
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-neutral-950 mb-4 leading-tight">
-            Transparent Solar Feasibility & Financial Intelligence
-          </h1>
-          <p className="text-lg text-neutral-600 leading-relaxed">
-            SolarWise determines whether installing solar is technically feasible and financially
-            justified for your household—without optimistic sales biases or hidden assumptions.
-          </p>
-        </div>
+      {/* Main Flow Content */}
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-6 w-full">
+        {currentStep === 0 && (
+          <LandingStep
+            onStart={() => setCurrentStep(1)}
+            onSelectScenario={handleSelectScenario}
+          />
+        )}
 
-        {/* Status & Diagnostic Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white p-6 rounded-xl border border-neutral-200/80 shadow-sm">
-            <div className="h-10 w-10 rounded-lg bg-emerald-100/80 text-emerald-700 flex items-center justify-center mb-4">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold text-neutral-900 mb-1">Architecture Foundation</h3>
-            <p className="text-sm text-neutral-600 mb-3">
-              Two independent repositories with separated Git histories and deployment targets.
-            </p>
-            <div className="text-xs font-mono text-neutral-500 bg-neutral-100 p-2 rounded border border-neutral-200">
-              Vercel (Frontend) + Render (Backend)
-            </div>
-          </div>
+        {currentStep === 1 && (
+          <BillUploadStep
+            onContinue={() => setCurrentStep(2)}
+            onManualEntry={() => setCurrentStep(2)}
+          />
+        )}
 
-          <div className="bg-white p-6 rounded-xl border border-neutral-200/80 shadow-sm">
-            <div className="h-10 w-10 rounded-lg bg-emerald-100/80 text-emerald-700 flex items-center justify-center mb-4">
-              <Zap className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold text-neutral-900 mb-1">API Integration</h3>
-            <p className="text-sm text-neutral-600 mb-3">
-              FastAPI backend running with strict Pydantic v2 schemas and health probes.
-            </p>
-            <div className="text-xs font-mono text-neutral-500 bg-neutral-100 p-2 rounded border border-neutral-200 break-all">
-              Endpoint: {apiBaseUrl}
-            </div>
-          </div>
+        {currentStep === 2 && (
+          <BillConfirmStep
+            initialBill={assessment.bill}
+            onConfirm={handleBillConfirm}
+            onBack={() => setCurrentStep(1)}
+          />
+        )}
 
-          <div className="bg-white p-6 rounded-xl border border-neutral-200/80 shadow-sm">
-            <div className="h-10 w-10 rounded-lg bg-emerald-100/80 text-emerald-700 flex items-center justify-center mb-4">
-              <Sun className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold text-neutral-900 mb-1">Environment</h3>
-            <p className="text-sm text-neutral-600 mb-3">
-              Isolated frontend build with zero leaked server-side secrets or tokens.
-            </p>
-            <div className="text-xs font-mono text-neutral-500 bg-neutral-100 p-2 rounded border border-neutral-200">
-              Mode: {appEnv}
-            </div>
-          </div>
-        </div>
+        {currentStep === 3 && (
+          <HouseholdUsageStep
+            initialUsage={assessment.usage}
+            onConfirm={handleUsageConfirm}
+            onBack={() => setCurrentStep(2)}
+          />
+        )}
 
-        {/* Phase Roadmap Preview */}
-        <div className="bg-white rounded-xl border border-neutral-200/80 p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-100">
-            <div>
-              <h2 className="text-xl font-bold text-neutral-950">Implementation Journey</h2>
-              <p className="text-sm text-neutral-500">Phased, verifiable milestone plan</p>
-            </div>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-neutral-100 text-neutral-700 rounded-md">
-              Phase 0 Complete
-            </span>
-          </div>
+        {currentStep === 4 && (
+          <LocationRoofStep
+            initialLocationRoof={assessment.locationRoof}
+            onConfirm={handleLocationRoofConfirm}
+            onBack={() => setCurrentStep(3)}
+          />
+        )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-            <div className="p-3.5 rounded-lg bg-emerald-50/60 border border-emerald-200/70">
-              <div className="font-semibold text-emerald-900 mb-1">Phase 0: Foundation</div>
-              <p className="text-xs text-emerald-700">Repositories, tooling, CI, and health checks</p>
-            </div>
-            <div className="p-3.5 rounded-lg bg-neutral-50 border border-neutral-200">
-              <div className="font-semibold text-neutral-800 mb-1">Phase 1: UI Shell</div>
-              <p className="text-xs text-neutral-500">Design system, assessment flow skeleton</p>
-            </div>
-            <div className="p-3.5 rounded-lg bg-neutral-50 border border-neutral-200">
-              <div className="font-semibold text-neutral-800 mb-1">Phase 2: Backend DB</div>
-              <p className="text-xs text-neutral-500">Database models, migrations, & schemas</p>
-            </div>
-            <div className="p-3.5 rounded-lg bg-neutral-50 border border-neutral-200">
-              <div className="font-semibold text-neutral-800 mb-1">Phase 3: Bill OCR</div>
-              <p className="text-xs text-neutral-500">Tesseract OCR & deterministic parser</p>
-            </div>
-          </div>
-        </div>
+        {currentStep === 5 && (
+          <SolarRecommendationStep
+            recommendation={assessment.recommendation}
+            onContinue={() => setCurrentStep(6)}
+            onBack={() => setCurrentStep(4)}
+          />
+        )}
+
+        {currentStep === 6 && (
+          <FinancialTwinStep
+            financial={assessment.financial}
+            onContinue={() => setCurrentStep(7)}
+            onBack={() => setCurrentStep(5)}
+          />
+        )}
+
+        {currentStep === 7 && (
+          <DecisionSummaryStep
+            decision={assessment.decision}
+            recommendation={assessment.recommendation}
+            financial={assessment.financial}
+            onRestart={handleReset}
+            onExport={handleExport}
+            onBack={() => setCurrentStep(6)}
+          />
+        )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-neutral-200/80 bg-white py-6 text-center text-xs text-neutral-500">
-        <p>SolarWise — Explainable Household Solar Feasibility Platform</p>
-      </footer>
+      <Footer />
     </div>
   )
 }
