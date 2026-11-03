@@ -41,6 +41,11 @@ export const App: React.FC = () => {
     setCurrentStep(0)
   }
 
+  const handleBillExtracted = (extractedBill: BillData) => {
+    setAssessment((prev) => ({ ...prev, bill: extractedBill }))
+    setCurrentStep(2)
+  }
+
   const handleBillConfirm = (updatedBill: BillData) => {
     setAssessment((prev) => ({ ...prev, bill: updatedBill }))
     setCurrentStep(3)
@@ -119,7 +124,7 @@ export const App: React.FC = () => {
 
         {currentStep === 1 && (
           <BillUploadStep
-            onContinue={() => setCurrentStep(2)}
+            onExtracted={handleBillExtracted}
             onManualEntry={() => setCurrentStep(2)}
           />
         )}

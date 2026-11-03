@@ -69,3 +69,4 @@ export const DecisionBadge: React.FC<DecisionBadgeProps> = ({
     </span>
   )
 }
+

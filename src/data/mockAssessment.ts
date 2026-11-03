@@ -225,3 +225,4 @@ export const lowConsumptionNotRecommendedAssessment: AssessmentState = {
     confidenceScore: 92,
   },
 }
+

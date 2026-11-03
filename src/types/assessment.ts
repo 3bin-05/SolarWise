@@ -109,3 +109,4 @@ export interface AssessmentState {
   financial: FinancialTwin
   decision: DecisionResult
 }
+
