@@ -76,3 +76,4 @@ describe("Energy Usage Intelligence Component", () => {
     )
   })
 })
+

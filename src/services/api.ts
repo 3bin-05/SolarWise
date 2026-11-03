@@ -58,6 +58,36 @@ export interface EnergyAnalysisApiResponse {
   assumptions_used: string[]
 }
 
+export interface LocationApiResponse {
+  city: string
+  state: string
+  state_code: string
+  latitude: number
+  longitude: number
+  optimal_tilt_degrees: number
+  annual_avg_daily_ghi: number
+  climatic_zone: string
+}
+
+export interface SolarGenerationApiResponse {
+  capacity_kw: number
+  annual_generation_kwh: number
+  specific_annual_yield_kwh_per_kwp: number
+  transposition_factor: number
+  location_used: string
+  scenarios: {
+    low_p90_annual_kwh: number
+    base_p50_annual_kwh: number
+    high_p10_annual_kwh: number
+  }
+  system_losses: {
+    overall_performance_ratio: number
+    shading_loss_pct: number
+    temperature_loss_pct: number
+  }
+  engineering_assumptions: string[]
+}
+
 export const api = {
   /**
    * Upload an electricity bill file (PDF, PNG, JPG) to the Smart Bill Analyzer.
@@ -218,6 +248,132 @@ export const api = {
       assumptions_used: [
         `Diurnal split: ${daytime}% daytime, ${nighttime}% nighttime`,
         "Slab progression modeled using state benchmark rates",
+      ],
+    }
+  },
+
+  /**
+   * Fetch list of supported locations with irradiance benchmarks.
+   */
+  async getLocations(): Promise<LocationApiResponse[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/locations`)
+      if (response.ok) {
+        const json = await response.json()
+        return json.data
+      }
+    } catch (err) {
+      console.warn("Backend locations offline, using fallback catalog:", err)
+    }
+
+    return [
+      {
+        city: "Kochi",
+        state: "Kerala",
+        state_code: "KL",
+        latitude: 9.93,
+        longitude: 76.26,
+        optimal_tilt_degrees: 12.0,
+        annual_avg_daily_ghi: 5.12,
+        climatic_zone: "Warm and Humid Coastal",
+      },
+      {
+        city: "Bengaluru",
+        state: "Karnataka",
+        state_code: "KA",
+        latitude: 12.97,
+        longitude: 77.59,
+        optimal_tilt_degrees: 14.0,
+        annual_avg_daily_ghi: 5.48,
+        climatic_zone: "Moderate Plateau",
+      },
+      {
+        city: "Mumbai",
+        state: "Maharashtra",
+        state_code: "MH",
+        latitude: 19.07,
+        longitude: 72.87,
+        optimal_tilt_degrees: 20.0,
+        annual_avg_daily_ghi: 5.32,
+        climatic_zone: "Coastal Sub-tropical",
+      },
+      {
+        city: "New Delhi",
+        state: "Delhi",
+        state_code: "DL",
+        latitude: 28.61,
+        longitude: 77.20,
+        optimal_tilt_degrees: 28.0,
+        annual_avg_daily_ghi: 5.22,
+        climatic_zone: "Composite Northern Plains",
+      },
+      {
+        city: "Chennai",
+        state: "Tamil Nadu",
+        state_code: "TN",
+        latitude: 13.08,
+        longitude: 80.27,
+        optimal_tilt_degrees: 14.0,
+        annual_avg_daily_ghi: 5.52,
+        climatic_zone: "Hot and Humid Coastal",
+      },
+    ]
+  },
+
+  /**
+   * Simulate physical solar generation.
+   */
+  async calculateSolarGeneration(params: {
+    capacity_kw: number
+    city?: string
+    state?: string
+    roof_type?: string
+    shading_level?: string
+  }): Promise<SolarGenerationApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/solar/generation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      })
+      if (response.ok) {
+        const json = await response.json()
+        return json.data
+      }
+    } catch (err) {
+      console.warn("Backend solar generation offline, falling back to local physics:", err)
+    }
+
+    const cap = params.capacity_kw || 3.0
+    const shadeMap: Record<string, number> = {
+      none: 0,
+      low: 0.05,
+      moderate: 0.15,
+      heavy: 0.30,
+    }
+    const shadeDerate = 1 - (shadeMap[params.shading_level?.toLowerCase() || "low"] ?? 0.05)
+    const baseSpecificYield = 1450 * shadeDerate
+    const annual = Number((cap * baseSpecificYield).toFixed(1))
+
+    return {
+      capacity_kw: cap,
+      annual_generation_kwh: annual,
+      specific_annual_yield_kwh_per_kwp: Number(baseSpecificYield.toFixed(1)),
+      transposition_factor: 1.02,
+      location_used: params.city || "National Baseline",
+      scenarios: {
+        low_p90_annual_kwh: Number((annual * 0.88).toFixed(1)),
+        base_p50_annual_kwh: annual,
+        high_p10_annual_kwh: Number((annual * 1.08).toFixed(1)),
+      },
+      system_losses: {
+        overall_performance_ratio: Number((0.79 * shadeDerate).toFixed(2)),
+        shading_loss_pct: (1 - shadeDerate) * 100,
+        temperature_loss_pct: 9.5,
+      },
+      engineering_assumptions: [
+        `System size: ${cap} kWp DC capacity`,
+        `Specific yield: ${baseSpecificYield.toFixed(0)} kWh/kWp/year`,
       ],
     }
   },
