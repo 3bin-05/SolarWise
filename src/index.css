@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 45 20% 99%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Solar green brand accent */
+    --primary: 152 76% 36%;
+    --primary-foreground: 355.7 100% 97.3%;
+
+    --secondary: 40 20% 94%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 40 20% 94%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Solar amber highlight */
+    --accent: 38 92% 50%;
+    --accent-foreground: 24 9.8% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 40 15% 90%;
+    --input: 40 15% 90%;
+    --ring: 152 76% 36%;
+
+    --radius: 0.5rem;
+  }
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
