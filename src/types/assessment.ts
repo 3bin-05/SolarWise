@@ -151,11 +151,15 @@ export interface FinancialTwin {
   breakEvenYear: number
   twentyFiveYearNetSavings: number
   roiPercentage: number
+  npv?: number
+  lcoePerKwh?: number
   yearlyCashFlows: {
     year: number
     withoutSolar: number
     withSolar: number
     cumulativeSavings: number
+    discountedCashFlow?: number
+    generationKwh?: number
   }[]
 }
 

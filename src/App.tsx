@@ -79,6 +79,33 @@ export const App: React.FC = () => {
       })
   }
 
+  const handleRecommendationContinue = () => {
+    setCurrentStep(6)
+    // Asynchronously enrich financial twin and decision from engine
+    api
+      .calculateFinancialAssessment({
+        monthly_consumption_kwh: assessment.bill.units || 400,
+        system_capacity_kw: assessment.recommendation.recommendedCapacityKw || 3.3,
+        installed_cost:
+          (assessment.recommendation.estimatedCostMin + assessment.recommendation.estimatedCostMax) /
+            2 || 180000,
+        annual_generation_kwh: assessment.recommendation.annualGenerationKwh || 4800,
+        provider_id: assessment.bill.provider || "generic",
+        daytime_usage_percentage: assessment.usage.daytimePercentage || 50,
+        state: assessment.locationRoof.state || "Karnataka",
+      })
+      .then((res) => {
+        setAssessment((prev) => ({
+          ...prev,
+          financial: res.financial,
+          decision: res.decision,
+        }))
+      })
+      .catch((err) => {
+        console.warn("Could not enrich financial twin:", err)
+      })
+  }
+
   const handleExport = () => {
     alert(
       `Solar Feasibility Report (${
@@ -175,7 +202,7 @@ export const App: React.FC = () => {
         {currentStep === 5 && (
           <SolarRecommendationStep
             recommendation={assessment.recommendation}
-            onContinue={() => setCurrentStep(6)}
+            onContinue={handleRecommendationContinue}
             onBack={() => setCurrentStep(4)}
           />
         )}
