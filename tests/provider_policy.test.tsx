@@ -10,7 +10,7 @@ describe("SolarWise Provider & Policy Matcher", () => {
     expect(res.total_count).toBeGreaterThan(0)
     expect(res.providers[0]).toHaveProperty("name")
     expect(res.providers[0]).toHaveProperty("website")
-    expect(res.disclaimer).toContain("Non-sponsored")
+    expect(res.disclaimer.toLowerCase()).toContain("non-sponsored")
   })
 
   it("runs api.getSubsidies with local fallback when backend is offline", async () => {

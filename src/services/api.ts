@@ -408,6 +408,50 @@ export const api = {
   },
 
   /**
+   * Upload an asset (bill, roof blueprint, or report) to Cloudinary media storage.
+   */
+  async uploadMedia(
+    file: File,
+    category: "bills" | "roofs" | "reports" | "general" = "general"
+  ): Promise<{ url?: string; public_id?: string; storage_provider: string }> {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("category", category)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/uploads/media`, {
+        method: "POST",
+        body: formData,
+      })
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}`)
+      }
+      const json = await response.json()
+      return json.data
+    } catch (err) {
+      console.warn("Backend upload offline, returning local fallback:", err)
+      return {
+        url: URL.createObjectURL(file),
+        storage_provider: "local_blob",
+      }
+    }
+  },
+
+  /**
+   * Check status of Cloudinary and media storage.
+   */
+  async getUploadStatus(): Promise<{ cloudinary_enabled: boolean; active_storage: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/uploads/status`)
+      if (!response.ok) return { cloudinary_enabled: false, active_storage: "local" }
+      const json = await response.json()
+      return json.data
+    } catch {
+      return { cloudinary_enabled: false, active_storage: "local" }
+    }
+  },
+
+  /**
    * Perform deterministic mathematical validation on bill numbers.
    */
   async validateBill(bill: BillData): Promise<ValidationApiResponse> {

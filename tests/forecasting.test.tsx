@@ -83,6 +83,9 @@ describe("SolarWise ML Forecasting & Demand Model", () => {
 
     // Click Apply button
     const applyBtn = screen.getByRole("button", { name: /apply .* to sizing/i })
+    await waitFor(() => {
+      expect(applyBtn).not.toBeDisabled()
+    })
     fireEvent.click(applyBtn)
     expect(handleApply).toHaveBeenCalled()
     expect(handleClose).toHaveBeenCalled()
