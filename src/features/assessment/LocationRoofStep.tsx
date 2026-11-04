@@ -6,6 +6,7 @@ import {
   Sun,
   MapPin,
   AlertTriangle,
+  Maximize2,
 } from "lucide-react"
 import { LocationRoof, RoofType } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
@@ -13,6 +14,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../..
 import { Input } from "../../components/ui/Input"
 import { Label } from "../../components/ui/Label"
 import { Badge } from "../../components/ui/Badge"
+import { RoofPlannerModal } from "./RoofPlannerModal"
 import {
   api,
   LocationApiResponse,
@@ -34,6 +36,8 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
   const [locations, setLocations] = useState<LocationApiResponse[]>([])
   const [generationPreview, setGenerationPreview] = useState<SolarGenerationApiResponse | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+  const [isPlannerOpen, setIsPlannerOpen] = useState(false)
+  const [plannerStats, setPlannerStats] = useState<{ count?: number; capacityKw?: number } | null>(null)
 
   const roofTypes: RoofType[] = ["RCC Flat", "Sloped Tiled", "Metal Sheet", "Asbestos / Other"]
 
@@ -187,7 +191,16 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
 
           {/* Rooftop Area */}
           <div>
-            <Label required>Approximate Shadow-Free Rooftop Area (sq ft)</Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label required>Approximate Shadow-Free Rooftop Area (sq ft)</Label>
+              <button
+                type="button"
+                onClick={() => setIsPlannerOpen(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-300 cursor-pointer transition-colors"
+              >
+                <Maximize2 className="h-3.5 w-3.5" /> 2D Digital Roof Planner
+              </button>
+            </div>
             <div className="relative mt-1">
               <Input
                 type="number"
@@ -201,6 +214,11 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
                 sq ft
               </span>
             </div>
+            {plannerStats?.count && (
+              <span className="text-[11px] font-semibold text-emerald-800 mt-1 block">
+                ✓ Visual planner confirmed: {plannerStats.count} panels (~{plannerStats.capacityKw} kWp) physically fitted.
+              </span>
+            )}
             <span className="text-[11px] text-neutral-500 mt-1 block">
               Rule of thumb: A typical 1 kW system requires ~90–100 sq ft of unobstructed space.
             </span>
@@ -289,6 +307,17 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Interactive 2D Roof Digital Planner Modal */}
+      <RoofPlannerModal
+        isOpen={isPlannerOpen}
+        onClose={() => setIsPlannerOpen(false)}
+        currentAreaSqFt={data.approxAreaSqFt}
+        onApplyArea={(newArea, count, capacityKw) => {
+          setData((prev) => ({ ...prev, approxAreaSqFt: newArea }))
+          setPlannerStats({ count, capacityKw })
+        }}
+      />
     </div>
   )
 }

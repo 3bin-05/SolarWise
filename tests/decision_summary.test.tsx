@@ -74,3 +74,4 @@ describe("Decision Summary Step", () => {
     expect(handleBack).toHaveBeenCalledTimes(1)
   })
 })
+
