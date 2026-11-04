@@ -52,3 +52,4 @@ export function formatPaybackYears(val: unknown): string {
   if (num > 25) return "> 25 yrs"
   return `${num.toFixed(1)} yrs`
 }
+

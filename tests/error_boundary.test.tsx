@@ -86,3 +86,4 @@ describe("SolarWise React Error Boundary", () => {
     fireEvent.click(tryAgainBtn)
   })
 })
+
