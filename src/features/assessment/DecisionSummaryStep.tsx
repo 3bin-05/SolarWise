@@ -1,10 +1,11 @@
 import React, { useState } from "react"
-import { CheckCircle2, AlertTriangle, XCircle, ArrowLeft, Download, RotateCcw, Sparkles, Sliders } from "lucide-react"
+import { CheckCircle2, AlertTriangle, XCircle, ArrowLeft, Download, RotateCcw, Sparkles, Sliders, Users } from "lucide-react"
 import { DecisionResult, SolarRecommendation, FinancialTwin } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
 import { Card, CardContent } from "../../components/ui/Card"
 import { DecisionBadge } from "../../components/solar/DecisionBadge"
 import { ScenarioSimulatorModal } from "./ScenarioSimulatorModal"
+import { ProviderPolicyModal } from "./ProviderPolicyModal"
 
 export interface DecisionSummaryStepProps {
   decision: DecisionResult
@@ -24,6 +25,7 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
   onBack,
 }) => {
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false)
+  const [isProviderModalOpen, setIsProviderModalOpen] = useState(false)
   const isRecommended =
     decision.outcome === "Attractive" || decision.outcome === "Strongly attractive"
 
@@ -172,6 +174,14 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
               >
                 <Sliders className="h-4 w-4 text-emerald-600" /> What-If Simulator
               </Button>
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => setIsProviderModalOpen(true)}
+                className="gap-1.5 border-slate-300 text-slate-800 hover:bg-slate-50"
+              >
+                <Users className="h-4 w-4 text-emerald-600" /> Find Installers & Subsidies
+              </Button>
             </div>
 
             <Button size="md" onClick={onExport} className="w-full sm:w-auto">
@@ -192,6 +202,12 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
           daytime_usage_percentage: 45,
           evaluation_horizon_years: 25,
         }}
+      />
+
+      <ProviderPolicyModal
+        isOpen={isProviderModalOpen}
+        onClose={() => setIsProviderModalOpen(false)}
+        initialState="Karnataka"
       />
     </div>
   )
