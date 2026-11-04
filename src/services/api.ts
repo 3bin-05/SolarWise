@@ -3,6 +3,7 @@
  */
 
 import {
+  AssessmentState,
   BatteryEquipment,
   BillData,
   DecisionOutcome,
@@ -13,6 +14,83 @@ import {
   SolarRecommendation,
   SystemType,
 } from "../types/assessment"
+
+export interface FeasibilityReportSummary {
+  verdict_outcome: string
+  headline: string
+  explanation: string
+  confidence_score: number
+  actionable_guidance: string[]
+}
+
+export interface FeasibilityReportLocation {
+  city: string
+  state: string
+  optimal_tilt_degrees: number
+  annual_avg_daily_ghi: number
+  climatic_zone: string
+}
+
+export interface FeasibilityReportConsumption {
+  monthly_kwh: number
+  annual_kwh: number
+  daytime_percentage: number
+  nighttime_percentage: number
+  current_annual_cost_inr: number
+  provider_name: string
+}
+
+export interface FeasibilityReportTechnical {
+  capacity_kw: number
+  panel_model: string
+  panel_count: number
+  panel_wattage: number
+  inverter_model: string
+  battery_storage_kwh: number
+  first_year_generation_kwh: number
+  performance_ratio: number
+  usable_roof_area_sqft: number
+}
+
+export interface FeasibilityReportFinancial {
+  installed_turnkey_cost_inr: number
+  pm_surya_ghar_subsidy_inr: number
+  net_initial_investment_inr: number
+  first_year_savings_inr: number
+  simple_payback_years: number
+  break_even_year: number | null
+  twenty_five_year_net_savings_inr: number
+  npv_inr: number
+  roi_percentage: number
+  lcoe_per_kwh: number
+}
+
+export interface FeasibilityReportResponse {
+  report_id: string
+  assessment_id: string | null
+  generated_at: string
+  version: string
+  title: string
+  summary: FeasibilityReportSummary
+  location: FeasibilityReportLocation
+  consumption: FeasibilityReportConsumption
+  technical: FeasibilityReportTechnical
+  financial: FeasibilityReportFinancial
+  policy_sources: any[]
+  matched_providers: any[]
+  disclaimers: string[]
+}
+
+export interface ReportExportRequest {
+  assessment_id?: string | null
+  title?: string
+  bill_data?: Record<string, any>
+  usage_data?: Record<string, any>
+  location_roof_data?: Record<string, any>
+  recommendation_data?: Record<string, any>
+  financial_twin_data?: Record<string, any>
+  decision_data?: Record<string, any>
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1"
 
@@ -1698,6 +1776,256 @@ export const api = {
       schemes: filtered,
       disclaimer: "Subsidy rates and timelines are governed by MNRE and respective state DISCOMs.",
       last_updated: "2024-10-01",
+    }
+  },
+
+  async saveAssessment(
+    assessment: AssessmentState
+  ): Promise<{ id: string; status: string; message: string }> {
+    const payload = {
+      bill_data: assessment.bill,
+      usage_data: assessment.usage,
+      location_roof_data: assessment.locationRoof,
+      recommendation_data: assessment.recommendation,
+      financial_twin_data: assessment.financial,
+      decision_data: assessment.decision,
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/assessments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!response.ok) {
+        throw new Error(`Server returned HTTP ${response.status}`)
+      }
+      const data = await response.json()
+      const savedId = data?.data?.id || `sw-local-${Date.now()}`
+      try {
+        localStorage.setItem(`solarwise_assessment_${savedId}`, JSON.stringify(assessment))
+      } catch {
+        // Ignore local storage error
+      }
+      return {
+        id: savedId,
+        status: "success",
+        message: "Assessment saved successfully to database.",
+      }
+    } catch (err) {
+      console.warn("Backend assessment persistence offline, saving to localStorage:", err)
+      const localId = `sw-local-${Date.now()}`
+      try {
+        localStorage.setItem(`solarwise_assessment_${localId}`, JSON.stringify(assessment))
+      } catch {
+        // Ignore local storage quota
+      }
+      return {
+        id: localId,
+        status: "saved_locally",
+        message: "Assessment saved to browser local store.",
+      }
+    }
+  },
+
+  async exportReport(
+    payload: ReportExportRequest,
+    assessmentId?: string
+  ): Promise<FeasibilityReportResponse> {
+    const url = assessmentId
+      ? `${API_BASE_URL}/reports/${assessmentId}/export`
+      : `${API_BASE_URL}/reports/export`
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!response.ok) {
+        throw new Error(`Server returned HTTP ${response.status}`)
+      }
+      const data = await response.json()
+      return data.data
+    } catch (err) {
+      console.warn("Backend report export offline, generating client-side feasibility docket:", err)
+      const rec = payload.recommendation_data || {}
+      const fin = payload.financial_twin_data || {}
+      const dec = payload.decision_data || {}
+      const loc = payload.location_roof_data || {}
+      const bill = payload.bill_data || {}
+      const repId = `SW-REP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+
+      return {
+        report_id: repId,
+        assessment_id: assessmentId || payload.assessment_id || null,
+        generated_at: new Date().toISOString().replace("T", " ").substring(0, 16) + " UTC",
+        version: "1.0.0",
+        title: payload.title || "SolarWise Feasibility & Engineering Docket",
+        summary: {
+          verdict_outcome: dec.outcome || "Attractive",
+          headline: dec.headline || "Rooftop Solar is Economically & Technically Viable",
+          explanation:
+            dec.explanation ||
+            "Your residential tariff and sunny rooftop profile deliver a sound investment return.",
+          confidence_score: dec.confidenceScore || 92.0,
+          actionable_guidance: dec.actionableImprovements || [
+            "Opt for ALMM-approved mono-PERC or TopCon tier-1 PV modules.",
+            "Verify net metering application timeline with local utility.",
+            "Register on PM Surya Ghar portal for direct DBT subsidy disbursement.",
+          ],
+        },
+        location: {
+          city: loc.city || "Bangalore",
+          state: loc.state || "Karnataka",
+          optimal_tilt_degrees: 13.0,
+          annual_avg_daily_ghi: 5.4,
+          climatic_zone: "Tropical Savanna",
+        },
+        consumption: {
+          monthly_kwh: bill.units || 400.0,
+          annual_kwh: (bill.units || 400.0) * 12,
+          daytime_percentage: 45.0,
+          nighttime_percentage: 55.0,
+          current_annual_cost_inr: fin.currentAnnualCost || 36000.0,
+          provider_name: bill.provider || "BESCOM",
+        },
+        technical: {
+          capacity_kw: rec.recommendedCapacityKw || 3.3,
+          panel_model: rec.panelModel?.model || "Mono-PERC 550W Tier-1",
+          panel_count: rec.panelCount || 6,
+          panel_wattage: rec.panelWattage || 550,
+          inverter_model: rec.inverterModel?.model || "3.3 kW Single-Phase String Inverter",
+          battery_storage_kwh: rec.batteryCapacityKwh || 0.0,
+          first_year_generation_kwh: rec.annualGenerationKwh || 4800.0,
+          performance_ratio: 0.78,
+          usable_roof_area_sqft: loc.approxAreaSqFt || 500.0,
+        },
+        financial: {
+          installed_turnkey_cost_inr: fin.netInitialInvestment
+            ? fin.netInitialInvestment + (fin.subsidyAmount || 78000)
+            : 180000.0,
+          pm_surya_ghar_subsidy_inr: fin.subsidyAmount || 78000.0,
+          net_initial_investment_inr: fin.netInitialInvestment || 102000.0,
+          first_year_savings_inr: fin.annualSavings || 32000.0,
+          simple_payback_years: fin.simplePaybackYears || 3.2,
+          break_even_year: fin.breakEvenYear || 4,
+          twenty_five_year_net_savings_inr: fin.twentyFiveYearNetSavings || 720000.0,
+          npv_inr: fin.npv || 410000.0,
+          roi_percentage: fin.roiPercentage || 24.5,
+          lcoe_per_kwh: fin.lcoePerKwh || 2.45,
+        },
+        policy_sources: [
+          {
+            scheme_name: "PM Surya Ghar: Muft Bijli Yojana",
+            administering_body: "Ministry of New and Renewable Energy (MNRE)",
+            portal_url: "https://pmsuryaghar.gov.in",
+          },
+        ],
+        matched_providers: [
+          {
+            company_name: "Tata Power Solar",
+            headquarters: "Mumbai, Maharashtra",
+            contact_phone: "1800-419-8777",
+            website: "https://www.tatapowersolar.com",
+          },
+        ],
+        disclaimers: [
+          "SolarWise is an independent engineering platform that does not sell hardware or earn sales commissions.",
+          "Estimated generation accounts for temperature coefficients and standard degradation (0.5%/yr).",
+          "Actual net metering credit timelines are determined by your DISCOM.",
+        ],
+      }
+    }
+  },
+
+  async getReportHtml(
+    payload: ReportExportRequest,
+    assessmentId?: string
+  ): Promise<string> {
+    const url = assessmentId
+      ? `${API_BASE_URL}/reports/${assessmentId}/html`
+      : `${API_BASE_URL}/reports/html`
+
+    try {
+      const response = await fetch(url, {
+        method: assessmentId ? "GET" : "POST",
+        headers: assessmentId ? undefined : { "Content-Type": "application/json" },
+        body: assessmentId ? undefined : JSON.stringify(payload),
+      })
+      if (!response.ok) {
+        throw new Error(`Server returned HTTP ${response.status}`)
+      }
+      return await response.text()
+    } catch (err) {
+      console.warn("Backend report HTML offline, rendering client-side printable HTML:", err)
+      const report = await this.exportReport(payload, assessmentId)
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${report.title} - ${report.report_id}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; padding: 24px; line-height: 1.5; }
+        .container { max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; }
+        .brand { font-size: 24px; font-weight: 800; color: #065f46; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+        .card-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+        .card-val { font-size: 18px; font-weight: 800; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+        th, td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+        th { background: #f1f5f9; font-size: 11px; text-transform: uppercase; color: #475569; }
+        @media print { body { padding: 0; } .container { border: none; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div class="brand">SolarWise</div>
+                <div style="color:#64748b;font-size:12px;">Explainable Household Solar Feasibility Docket</div>
+            </div>
+            <div style="text-align:right;">
+                <span class="badge">${report.summary.verdict_outcome}</span>
+                <div style="font-family:monospace;font-size:11px;color:#64748b;margin-top:4px;">${report.report_id}</div>
+            </div>
+        </div>
+        <div style="margin:20px 0;padding:16px;background:#f0fdf4;border-left:4px solid #10b981;border-radius:6px;">
+            <h3 style="margin:0 0 4px;color:#065f46;">${report.summary.headline}</h3>
+            <p style="margin:0;font-size:13px;color:#334155;">${report.summary.explanation}</p>
+        </div>
+        <div class="grid-4">
+            <div class="card">
+                <div class="card-label">Recommended Capacity</div>
+                <div class="card-val">${report.technical.capacity_kw} kWp</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Simple Payback</div>
+                <div class="card-val" style="color:#059669;">${report.financial.simple_payback_years} Yrs</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Net Investment</div>
+                <div class="card-val">₹${report.financial.net_initial_investment_inr.toLocaleString()}</div>
+            </div>
+            <div class="card">
+                <div class="card-label">25-Yr Net Savings</div>
+                <div class="card-val" style="color:#059669;">₹${report.financial.twenty_five_year_net_savings_inr.toLocaleString()}</div>
+            </div>
+        </div>
+        <div style="margin-top:20px;">
+            <h4>Actionable Recommendations</h4>
+            <ul>
+                ${report.summary.actionable_guidance.map((g) => `<li>${g}</li>`).join("")}
+            </ul>
+        </div>
+        <div style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:12px;font-size:11px;color:#64748b;">
+            Generated by SolarWise • Independent Consumer Protection Mandate
+        </div>
+    </div>
+</body>
+</html>`
     }
   },
 }

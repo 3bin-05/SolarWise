@@ -107,15 +107,7 @@ export const App: React.FC = () => {
   }
 
   const handleExport = () => {
-    alert(
-      `Solar Feasibility Report (${
-        scenario === "attractive" ? "Attractive" : "Not Recommended"
-      } Scenario)\n\nSystem: ${assessment.recommendation.recommendedCapacityKw} kW\nVerdict: ${
-        assessment.decision.outcome
-      }\nSimple Payback: ${assessment.financial.simplePaybackYears} years\nConfidence: ${
-        assessment.decision.confidenceScore
-      }%\n\nFull PDF report generation will be connected in Phase 12.`
-    )
+    // Report export modal is presented via DecisionSummaryStep
   }
 
   const stepLabels = [
@@ -220,6 +212,7 @@ export const App: React.FC = () => {
             decision={assessment.decision}
             recommendation={assessment.recommendation}
             financial={assessment.financial}
+            assessment={assessment}
             onRestart={handleReset}
             onExport={handleExport}
             onBack={() => setCurrentStep(6)}

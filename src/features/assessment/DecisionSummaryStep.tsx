@@ -1,16 +1,18 @@
 import React, { useState } from "react"
 import { CheckCircle2, AlertTriangle, XCircle, ArrowLeft, Download, RotateCcw, Sparkles, Sliders, Users } from "lucide-react"
-import { DecisionResult, SolarRecommendation, FinancialTwin } from "../../types/assessment"
+import { DecisionResult, SolarRecommendation, FinancialTwin, AssessmentState } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
 import { Card, CardContent } from "../../components/ui/Card"
 import { DecisionBadge } from "../../components/solar/DecisionBadge"
 import { ScenarioSimulatorModal } from "./ScenarioSimulatorModal"
 import { ProviderPolicyModal } from "./ProviderPolicyModal"
+import { FeasibilityReportModal } from "./FeasibilityReportModal"
 
 export interface DecisionSummaryStepProps {
   decision: DecisionResult
   recommendation: SolarRecommendation
   financial: FinancialTwin
+  assessment?: AssessmentState
   onRestart: () => void
   onExport: () => void
   onBack: () => void
@@ -20,14 +22,58 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
   decision,
   recommendation,
   financial,
+  assessment,
   onRestart,
   onExport,
   onBack,
 }) => {
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false)
   const [isProviderModalOpen, setIsProviderModalOpen] = useState(false)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   const isRecommended =
     decision.outcome === "Attractive" || decision.outcome === "Strongly attractive"
+
+  const effectiveAssessment: AssessmentState = assessment || {
+    currentStep: 7,
+    bill: {
+      provider: "BESCOM",
+      consumerCategory: "domestic",
+      billingPeriod: "monthly",
+      billingDays: 30,
+      units: 400,
+      totalBill: 3100,
+      energyCharges: 2700,
+      fixedCharges: 250,
+      taxesAndAdjustments: 150,
+      meterType: "Single Phase Non-ToD",
+      isConfidenceHigh: true,
+      validationWarnings: [],
+    },
+    usage: {
+      monthlyUnits: 400,
+      daytimePercentage: 45,
+      nighttimePercentage: 55,
+      hasFrequentOutages: false,
+      avgOutageHoursPerWeek: 0,
+      budget: null,
+    },
+    locationRoof: {
+      city: "Bangalore",
+      state: "Karnataka",
+      postalCode: "560001",
+      roofType: "RCC Flat",
+      approxAreaSqFt: 500,
+      shadingLevel: "Low",
+    },
+    recommendation,
+    financial,
+    decision,
+  }
+
+  const handleExportClick = () => {
+    setIsReportModalOpen(true)
+    onExport()
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-4 space-y-6">
@@ -184,12 +230,18 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
               </Button>
             </div>
 
-            <Button size="md" onClick={onExport} className="w-full sm:w-auto">
+            <Button size="md" onClick={handleExportClick} className="w-full sm:w-auto">
               <Download className="h-4 w-4 mr-1" /> Export Feasibility Report
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <FeasibilityReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        assessment={effectiveAssessment}
+      />
 
       <ScenarioSimulatorModal
         isOpen={isScenarioModalOpen}
