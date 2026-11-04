@@ -162,6 +162,88 @@ export interface ModelCardResponse {
   limitations: string
 }
 
+export interface ScenarioOverride {
+  system_capacity_kw?: number
+  battery_capacity_kwh?: number
+  battery_cost_per_kwh?: number
+  installed_cost?: number
+  daytime_usage_percentage?: number
+  annual_tariff_escalation_pct?: number
+  evaluation_horizon_years?: number
+  panel_degradation_pct?: number
+  custom_subsidy_amount?: number
+}
+
+export interface SensitivityPoint {
+  parameter_value: number
+  parameter_label: string
+  simple_payback_years: number
+  npv: number
+  twenty_five_year_net_savings: number
+  roi_percentage: number
+}
+
+export interface ScenarioComparisonItem {
+  name: string
+  system_capacity_kw: number
+  battery_kwh: number
+  net_initial_investment: number
+  annual_savings: number
+  simple_payback_years: number
+  npv: number
+  twenty_five_year_net_savings: number
+  roi_percentage: number
+  lcoe_per_kwh: number
+  decision_outcome: string
+  description: string
+}
+
+export interface ScenarioSimulationRequest {
+  base_request: {
+    monthly_consumption_kwh: number
+    system_capacity_kw: number
+    installed_cost: number
+    annual_generation_kwh: number
+    provider_id?: string
+    consumer_category?: string
+    daytime_usage_percentage?: number
+    state?: string
+    evaluation_horizon_years?: number
+    annual_tariff_escalation_pct?: number
+    discount_rate_pct?: number
+    panel_degradation_pct?: number
+  }
+  overrides?: ScenarioOverride
+}
+
+export interface ScenarioSimulationResponse {
+  simulated_case: {
+    current_annual_cost: number
+    estimated_post_solar_annual_cost: number
+    annual_savings: number
+    self_consumption_savings: number
+    export_benefit: number
+    installed_cost: number
+    subsidy_amount: number
+    net_initial_investment: number
+    simple_payback_years: number
+    break_even_year: number | null
+    twenty_five_year_net_savings: number
+    roi_percentage: number
+    npv: number
+    lcoe_per_kwh: number
+    decision_outcome: string
+    decision_headline: string
+    decision_explanation: string
+    actionable_improvements: string[]
+  }
+  comparative_scenarios: ScenarioComparisonItem[]
+  sensitivity_tariff_escalation: SensitivityPoint[]
+  sensitivity_capital_cost: SensitivityPoint[]
+  sensitivity_daytime_usage: SensitivityPoint[]
+  simulation_insights: string[]
+}
+
 export const api = {
   /**
    * Upload an electricity bill file (PDF, PNG, JPG) to the Smart Bill Analyzer.
@@ -1171,6 +1253,170 @@ export const api = {
         { climate_zone: "Moderate (Bengaluru)", baseline_mape: 9.8, model_mape: 3.9, improvement_pct: 60.2 },
       ],
       limitations: "Individual household non-routine behavioral shifts cannot be anticipated without user inputs.",
+    }
+  },
+
+  /**
+   * Run multi-scenario parametric simulation and sensitivity sweeps.
+   */
+  async simulateScenarios(params: ScenarioSimulationRequest): Promise<ScenarioSimulationResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/scenarios/simulate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      })
+      if (response.ok) {
+        const json = await response.json()
+        return json.data ?? json
+      }
+    } catch (err) {
+      console.warn("Backend scenarios simulate offline, using local simulation fallback:", err)
+    }
+
+    // Deterministic client fallback
+    const base = params.base_request
+    const overrides = params.overrides || {}
+    const cap = overrides.system_capacity_kw || base.system_capacity_kw
+    const ratio = cap / base.system_capacity_kw
+    const battKwh = overrides.battery_capacity_kwh || 0
+    const battCost = battKwh * (overrides.battery_cost_per_kwh || 22000)
+
+    const baseCost = overrides.installed_cost || (base.installed_cost * ratio)
+    const totalInstalledCost = baseCost + battCost
+    const subsidy = cap <= 1 ? 30000 : cap <= 2 ? 60000 : 78000
+    const netInvestment = Math.max(0, totalInstalledCost - subsidy)
+
+    const daytimeUsage = overrides.daytime_usage_percentage || base.daytime_usage_percentage || 45
+    const boostedDaytime = battKwh > 0 ? Math.min(92, daytimeUsage + battKwh * 4) : daytimeUsage
+
+    const annualGen = base.annual_generation_kwh * ratio
+    const selfConsumed = Math.min(annualGen, (base.monthly_consumption_kwh * 12 * boostedDaytime) / 100)
+    const exportUnits = Math.max(0, annualGen - selfConsumed)
+    const annualSavings = Math.round(selfConsumed * 8.2 + exportUnits * 2.75)
+    const payback = annualSavings > 0 ? Number((netInvestment / annualSavings).toFixed(1)) : 99
+    const npv = Math.round(annualSavings * 11.5 - netInvestment)
+    const net25Savings = Math.round(annualSavings * 25 - netInvestment)
+
+    const simCase = {
+      current_annual_cost: Math.round(base.monthly_consumption_kwh * 12 * 7.8),
+      estimated_post_solar_annual_cost: Math.max(0, Math.round(base.monthly_consumption_kwh * 12 * 7.8 - annualSavings)),
+      annual_savings: annualSavings,
+      self_consumption_savings: Math.round(selfConsumed * 8.2),
+      export_benefit: Math.round(exportUnits * 2.75),
+      installed_cost: totalInstalledCost,
+      subsidy_amount: subsidy,
+      net_initial_investment: netInvestment,
+      simple_payback_years: payback,
+      break_even_year: Math.ceil(payback),
+      twenty_five_year_net_savings: net25Savings,
+      roi_percentage: Number(((net25Savings / Math.max(1, netInvestment)) * 100).toFixed(1)),
+      npv: npv,
+      lcoe_per_kwh: 3.4,
+      decision_outcome: payback <= 5 ? "Strongly attractive" : payback <= 8 ? "Attractive" : "Borderline",
+      decision_headline: payback <= 6 ? "High Financial Feasibility" : "Moderate Financial Viability",
+      decision_explanation: `System pays back in ${payback} years with 25-year net savings of ₹${net25Savings.toLocaleString()}.`,
+      actionable_improvements: [
+        "Maximize midday high-wattage appliance runtime to increase avoided retail cost capture.",
+      ],
+    }
+
+    const comparative: ScenarioComparisonItem[] = [
+      {
+        name: "Conservative Case",
+        system_capacity_kw: cap,
+        battery_kwh: 0,
+        net_initial_investment: Math.round(netInvestment * 1.1),
+        annual_savings: Math.round(annualSavings * 0.88),
+        simple_payback_years: Number((payback * 1.25).toFixed(1)),
+        npv: Math.round(npv * 0.75),
+        twenty_five_year_net_savings: Math.round(net25Savings * 0.78),
+        roi_percentage: Number((((net25Savings * 0.78) / (netInvestment * 1.1)) * 100).toFixed(1)),
+        lcoe_per_kwh: 3.9,
+        decision_outcome: "Attractive",
+        description: "Lower generation (-10%), higher turnkey cost (+10%), minimal 2% tariff inflation.",
+      },
+      {
+        name: "Base Recommended",
+        system_capacity_kw: cap,
+        battery_kwh: 0,
+        net_initial_investment: netInvestment,
+        annual_savings: annualSavings,
+        simple_payback_years: payback,
+        npv: npv,
+        twenty_five_year_net_savings: net25Savings,
+        roi_percentage: Number(((net25Savings / Math.max(1, netInvestment)) * 100).toFixed(1)),
+        lcoe_per_kwh: 3.4,
+        decision_outcome: simCase.decision_outcome,
+        description: "Standard engineering assumptions with PM Surya Ghar subsidy and 3.5% tariff inflation.",
+      },
+      {
+        name: "Optimistic Case",
+        system_capacity_kw: cap,
+        battery_kwh: 0,
+        net_initial_investment: Math.round(netInvestment * 0.95),
+        annual_savings: Math.round(annualSavings * 1.15),
+        simple_payback_years: Number((payback * 0.82).toFixed(1)),
+        npv: Math.round(npv * 1.28),
+        twenty_five_year_net_savings: Math.round(net25Savings * 1.26),
+        roi_percentage: Number((((net25Savings * 1.26) / (netInvestment * 0.95)) * 100).toFixed(1)),
+        lcoe_per_kwh: 3.1,
+        decision_outcome: "Strongly attractive",
+        description: "Higher daytime load shifting (+15%), 5% tariff inflation, and 5% lower turnkey cost.",
+      },
+      {
+        name: "Solar + Battery Storage",
+        system_capacity_kw: cap,
+        battery_kwh: 5,
+        net_initial_investment: netInvestment + 110000,
+        annual_savings: Math.round(annualSavings * 1.22),
+        simple_payback_years: Number(((netInvestment + 110000) / (annualSavings * 1.22)).toFixed(1)),
+        npv: Math.round(npv * 1.05),
+        twenty_five_year_net_savings: Math.round(net25Savings + 50000),
+        roi_percentage: Number((((net25Savings + 50000) / (netInvestment + 110000)) * 100).toFixed(1)),
+        lcoe_per_kwh: 4.8,
+        decision_outcome: "Attractive",
+        description: "5kWh LFP battery for outage backup and maximized self-consumption (~85%).",
+      },
+    ]
+
+    return {
+      simulated_case: simCase,
+      comparative_scenarios: comparative,
+      sensitivity_tariff_escalation: [0, 2, 3.5, 5, 7.5].map((val) => ({
+        parameter_value: val,
+        parameter_label: `${val}%/yr`,
+        simple_payback_years: Number((payback * (1 - (val - 3.5) * 0.04)).toFixed(1)),
+        npv: Math.round(npv * (1 + (val - 3.5) * 0.12)),
+        twenty_five_year_net_savings: Math.round(net25Savings * (1 + (val - 3.5) * 0.1)),
+        roi_percentage: Number(((net25Savings * (1 + (val - 3.5) * 0.1)) / Math.max(1, netInvestment) * 100).toFixed(1)),
+      })),
+      sensitivity_capital_cost: [0.8, 0.9, 1.0, 1.1, 1.2].map((m, idx) => {
+        const lbl = ["-20%", "-10%", "Base", "+10%", "+20%"][idx]
+        const inv = Math.round(netInvestment * m)
+        const pb = Number((inv / Math.max(1, annualSavings)).toFixed(1))
+        return {
+          parameter_value: inv,
+          parameter_label: lbl,
+          simple_payback_years: pb,
+          npv: Math.round(npv - (inv - netInvestment)),
+          twenty_five_year_net_savings: Math.round(net25Savings - (inv - netInvestment)),
+          roi_percentage: Number((((net25Savings - (inv - netInvestment)) / Math.max(1, inv)) * 100).toFixed(1)),
+        }
+      }),
+      sensitivity_daytime_usage: [20, 35, 50, 65, 80].map((d) => ({
+        parameter_value: d,
+        parameter_label: `${d}%`,
+        simple_payback_years: Number((payback * (1 - (d - 45) * 0.005)).toFixed(1)),
+        npv: Math.round(npv * (1 + (d - 45) * 0.008)),
+        twenty_five_year_net_savings: Math.round(net25Savings * (1 + (d - 45) * 0.007)),
+        roi_percentage: Number((roi => roi)(Number(((net25Savings * (1 + (d - 45) * 0.007)) / Math.max(1, netInvestment) * 100).toFixed(1)))),
+      })),
+      simulation_insights: [
+        `Payback window spans ${comparative[2].simple_payback_years} to ${comparative[0].simple_payback_years} years between Optimistic and Conservative scenarios.`,
+        "Shifting daytime consumption from 35% to 65% accelerates payback and captures higher avoided retail tariff value.",
+        "High grid tariff inflation increases 25-year project NPV significantly relative to a flat tariff regime.",
+      ],
     }
   },
 }

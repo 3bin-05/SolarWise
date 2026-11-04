@@ -1,9 +1,10 @@
-import React from "react"
-import { CheckCircle2, AlertTriangle, XCircle, ArrowLeft, Download, RotateCcw, Sparkles } from "lucide-react"
+import React, { useState } from "react"
+import { CheckCircle2, AlertTriangle, XCircle, ArrowLeft, Download, RotateCcw, Sparkles, Sliders } from "lucide-react"
 import { DecisionResult, SolarRecommendation, FinancialTwin } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
 import { Card, CardContent } from "../../components/ui/Card"
 import { DecisionBadge } from "../../components/solar/DecisionBadge"
+import { ScenarioSimulatorModal } from "./ScenarioSimulatorModal"
 
 export interface DecisionSummaryStepProps {
   decision: DecisionResult
@@ -22,6 +23,7 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
   onExport,
   onBack,
 }) => {
+  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false)
   const isRecommended =
     decision.outcome === "Attractive" || decision.outcome === "Strongly attractive"
 
@@ -162,6 +164,14 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
               <Button variant="secondary" size="md" onClick={onRestart}>
                 <RotateCcw className="h-4 w-4 mr-1" /> New Assessment
               </Button>
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => setIsScenarioModalOpen(true)}
+                className="gap-1.5 border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+              >
+                <Sliders className="h-4 w-4 text-emerald-600" /> What-If Simulator
+              </Button>
             </div>
 
             <Button size="md" onClick={onExport} className="w-full sm:w-auto">
@@ -170,6 +180,19 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      <ScenarioSimulatorModal
+        isOpen={isScenarioModalOpen}
+        onClose={() => setIsScenarioModalOpen(false)}
+        baseParams={{
+          monthly_consumption_kwh: 400,
+          system_capacity_kw: recommendation.recommendedCapacityKw || 3.0,
+          installed_cost: recommendation.estimatedCostMin || 175000,
+          annual_generation_kwh: recommendation.annualGenerationKwh || 4350,
+          daytime_usage_percentage: 45,
+          evaluation_horizon_years: 25,
+        }}
+      />
     </div>
   )
 }

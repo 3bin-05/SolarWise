@@ -1,27 +1,59 @@
-import React from "react"
-import { ArrowRight, ArrowLeft, ShieldCheck, Info } from "lucide-react"
+import React, { useState } from "react"
+import { ArrowRight, ArrowLeft, ShieldCheck, Info, Sliders } from "lucide-react"
 import { FinancialTwin } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/Card"
 import { MetricCard } from "../../components/solar/MetricCard"
 import { AssumptionPill } from "../../components/solar/AssumptionPill"
+import { ScenarioSimulatorModal } from "./ScenarioSimulatorModal"
 
 export interface FinancialTwinStepProps {
   financial: FinancialTwin
   onContinue: () => void
   onBack: () => void
+  baseParams?: {
+    monthly_consumption_kwh: number
+    system_capacity_kw: number
+    installed_cost: number
+    annual_generation_kwh: number
+    provider_id?: string
+    consumer_category?: string
+    daytime_usage_percentage?: number
+    state?: string
+    evaluation_horizon_years?: number
+  }
+  onApplyScenario?: (updated: {
+    system_capacity_kw: number
+    installed_cost: number
+    annual_generation_kwh: number
+    battery_kwh: number
+    daytime_percentage: number
+  }) => void
 }
 
 export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
   financial,
   onContinue,
   onBack,
+  baseParams,
+  onApplyScenario,
 }) => {
+  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false)
+
+  const fallbackParams = baseParams || {
+    monthly_consumption_kwh: 400,
+    system_capacity_kw: 3.0,
+    installed_cost: financial.netInitialInvestment + financial.subsidyAmount,
+    annual_generation_kwh: 4350,
+    daytime_usage_percentage: 45,
+    evaluation_horizon_years: 25,
+  }
+
   return (
     <div className="max-w-4xl mx-auto py-4 space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <CardTitle className="text-2xl">Solar Financial Twin</CardTitle>
               <CardDescription>
@@ -29,8 +61,19 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
                 post-solar cash flows.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-100/70 px-3 py-1 rounded-full border border-emerald-200">
-              <ShieldCheck className="h-4 w-4" /> Verified Marginal Model
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsScenarioModalOpen(true)}
+                className="gap-1.5 border-emerald-300 text-emerald-800 hover:bg-emerald-50 text-xs"
+              >
+                <Sliders className="w-3.5 h-3.5 text-emerald-600" />
+                Scenario Simulator
+              </Button>
+              <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-100/70 px-3 py-1 rounded-full border border-emerald-200">
+                <ShieldCheck className="h-4 w-4" /> Verified Marginal Model
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -169,6 +212,13 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      <ScenarioSimulatorModal
+        isOpen={isScenarioModalOpen}
+        onClose={() => setIsScenarioModalOpen(false)}
+        baseParams={fallbackParams}
+        onApplyScenario={onApplyScenario}
+      />
     </div>
   )
 }
