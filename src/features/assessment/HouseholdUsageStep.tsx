@@ -16,6 +16,7 @@ import { Input } from "../../components/ui/Input"
 import { Label } from "../../components/ui/Label"
 import { Badge } from "../../components/ui/Badge"
 import { api, EnergyAnalysisApiResponse } from "../../services/api"
+import { ForecastDemandModal } from "./ForecastDemandModal"
 
 export interface HouseholdUsageStepProps {
   initialUsage: HouseholdUsage
@@ -32,6 +33,7 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
 }) => {
   const [usage, setUsage] = useState<HouseholdUsage>(initialUsage)
   const [analysis, setAnalysis] = useState<EnergyAnalysisApiResponse | null>(null)
+  const [isForecastModalOpen, setIsForecastModalOpen] = useState<boolean>(false)
 
   useEffect(() => {
     let isCancelled = false
@@ -108,9 +110,21 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
           {/* Monthly Units Quick Override */}
           <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <Label>Baseline Monthly Consumption</Label>
-              <div className="text-xs text-neutral-500">
-                Extracted from bill or adjusted for typical monthly consumption
+              <div className="flex items-center gap-2">
+                <Label>Baseline Monthly Consumption</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsForecastModalOpen(true)}
+                  className="h-6 px-2 text-[11px] text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1"
+                >
+                  <TrendingUp className="w-3 h-3 text-emerald-600" />
+                  Forecast Future (EV / AC)
+                </Button>
+              </div>
+              <div className="text-xs text-neutral-500 mt-0.5">
+                Extracted from bill or projected with seasonal cooling surges and appliance additions
               </div>
             </div>
             <div className="w-full sm:w-44">
@@ -273,6 +287,18 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      <ForecastDemandModal
+        isOpen={isForecastModalOpen}
+        onClose={() => setIsForecastModalOpen(false)}
+        currentMonthlyUnits={usage.monthlyUnits}
+        onApplyProjectedUnits={(newUnits) =>
+          setUsage((prev) => ({
+            ...prev,
+            monthlyUnits: newUnits,
+          }))
+        }
+      />
     </div>
   )
 }
