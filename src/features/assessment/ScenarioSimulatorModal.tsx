@@ -56,6 +56,18 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
   const [simResult, setSimResult] = useState<ScenarioSimulationResponse | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose()
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen, onClose])
+
   // Sync state if baseParams change when opened
   useEffect(() => {
     if (isOpen) {
