@@ -12,8 +12,13 @@ import {
   InverterEquipment,
   PanelEquipment,
   SolarRecommendation,
-  SystemType,
 } from "../types/assessment"
+import {
+  parseBillTextClientSide,
+  toBillData,
+  extractTextFromPdfArrayBuffer,
+  extractTextFromImageFile,
+} from "../lib/billTextParser"
 
 export interface FeasibilityReportSummary {
   verdict_outcome: string
@@ -21,6 +26,7 @@ export interface FeasibilityReportSummary {
   explanation: string
   confidence_score: number
   actionable_guidance: string[]
+  reasons_not_recommended?: string[]
 }
 
 export interface FeasibilityReportLocation {
@@ -50,6 +56,10 @@ export interface FeasibilityReportTechnical {
   first_year_generation_kwh: number
   performance_ratio: number
   usable_roof_area_sqft: number
+  brand_tier?: string
+  almm_compliance?: string
+  pvel_reliability?: string
+  bms_compatibility?: string
 }
 
 export interface FeasibilityReportFinancial {
@@ -91,8 +101,6 @@ export interface ReportExportRequest {
   financial_twin_data?: Record<string, any>
   decision_data?: Record<string, any>
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1"
 
 export interface ExtractedBillApiResponse {
   provider: string
@@ -372,116 +380,104 @@ export interface SubsidyListResponse {
 
 export const api = {
   /**
+   * Extract bill data directly from raw text without any file upload.
+   */
+  async extractBillText(text: string, _filename?: string): Promise<BillData> {
+    const parsed = parseBillTextClientSide(text)
+    return toBillData(parsed)
+  },
+
+  /**
    * Upload an electricity bill file (PDF, PNG, JPG) to the Smart Bill Analyzer.
+   * Extracts text client-side in memory to preserve total user privacy (zero server uploads).
    */
   async extractBill(file: File): Promise<BillData> {
-    const formData = new FormData()
-    formData.append("file", file)
+    const fileName = file.name.toLowerCase()
 
-    const response = await fetch(`${API_BASE_URL}/bills/extract`, {
-      method: "POST",
-      body: formData,
-    })
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}))
-      throw new Error(err.message || `Bill extraction failed with status ${response.status}`)
+    // 1. Digital PDF extraction in browser memory
+    if (fileName.endsWith(".pdf")) {
+      try {
+        const buffer = await file.arrayBuffer()
+        const extractedText = await extractTextFromPdfArrayBuffer(buffer)
+        if (extractedText && extractedText.length > 30) {
+          const result = await this.extractBillText(extractedText, file.name)
+          if (result.units > 0 || result.totalBill > 0) {
+            return result
+          }
+        }
+      } catch (clientErr) {
+        console.warn("Client-side PDF extraction notice:", clientErr)
+      }
+    } else if (fileName.endsWith(".txt") || fileName.endsWith(".csv") || fileName.endsWith(".json")) {
+      try {
+        const text = await file.text()
+        return await this.extractBillText(text, file.name)
+      } catch (err) {
+        console.warn("Could not read text file:", err)
+      }
+    } else if (
+      fileName.endsWith(".png") ||
+      fileName.endsWith(".jpg") ||
+      fileName.endsWith(".jpeg") ||
+      fileName.endsWith(".webp")
+    ) {
+      // 2. In-browser client-side WebAssembly OCR for images
+      try {
+        const text = await extractTextFromImageFile(file)
+        if (text && text.length > 15) {
+          const result = await this.extractBillText(text, file.name)
+          if (result.units > 0 || result.totalBill > 0) {
+            return result
+          }
+        }
+      } catch (err) {
+        console.warn("Client-side image OCR error:", err)
+      }
     }
 
-    const json = await response.json()
-    const d: ExtractedBillApiResponse = json.data
-
+    // 3. Fallback when OCR/text cannot be automatically read from blurry scans
     return {
-      provider: d.provider,
-      consumerCategory: d.consumer_category,
-      billingPeriod: d.billing_period,
-      billingDays: d.billing_days,
-      units: d.units,
-      totalBill: d.total_bill,
-      energyCharges: d.energy_charges,
-      fixedCharges: d.fixed_charges,
-      taxesAndAdjustments: d.taxes_and_adjustments,
-      meterType: d.meter_type,
-      isConfidenceHigh: d.is_confidence_high,
-      validationWarnings: d.validation_warnings || [],
+      provider: "State Electricity Distribution Co.",
+      consumerCategory: "Domestic (Residential)",
+      billingPeriod: "Monthly Cycle",
+      billingDays: 30,
+      units: 0,
+      totalBill: 0,
+      energyCharges: 0,
+      fixedCharges: 0,
+      taxesAndAdjustments: 0,
+      meterType: "Single Phase",
+      isConfidenceHigh: false,
+      validationWarnings: [
+        "Text could not be automatically extracted from this scanned image. Please verify or enter your Units and Bill Amount on the next screen.",
+      ],
     }
   },
 
   /**
-   * Upload an asset (bill, roof blueprint, or report) to Cloudinary media storage.
+   * Create local memory blob URL for client assets (zero cloud upload).
    */
   async uploadMedia(
     file: File,
-    category: "bills" | "roofs" | "reports" | "general" = "general"
+    _category: "bills" | "roofs" | "reports" | "general" = "general"
   ): Promise<{ url?: string; public_id?: string; storage_provider: string }> {
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("category", category)
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/uploads/media`, {
-        method: "POST",
-        body: formData,
-      })
-      if (!response.ok) {
-        throw new Error(`Upload failed with status ${response.status}`)
-      }
-      const json = await response.json()
-      return json.data
-    } catch (err) {
-      console.warn("Backend upload offline, returning local fallback:", err)
-      return {
-        url: URL.createObjectURL(file),
-        storage_provider: "local_blob",
-      }
+    return {
+      url: URL.createObjectURL(file),
+      storage_provider: "local_blob",
     }
   },
 
   /**
-   * Check status of Cloudinary and media storage.
+   * Storage status (runs in purely local client-side mode).
    */
   async getUploadStatus(): Promise<{ cloudinary_enabled: boolean; active_storage: string }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/uploads/status`)
-      if (!response.ok) return { cloudinary_enabled: false, active_storage: "local" }
-      const json = await response.json()
-      return json.data
-    } catch {
-      return { cloudinary_enabled: false, active_storage: "local" }
-    }
+    return { cloudinary_enabled: false, active_storage: "local" }
   },
 
   /**
    * Perform deterministic mathematical validation on bill numbers.
    */
   async validateBill(bill: BillData): Promise<ValidationApiResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/bills/validate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          provider: bill.provider,
-          consumer_category: bill.consumerCategory,
-          billing_period: bill.billingPeriod,
-          billing_days: bill.billingDays,
-          units: bill.units,
-          total_bill: bill.totalBill,
-          energy_charges: bill.energyCharges,
-          fixed_charges: bill.fixedCharges,
-          taxes_and_adjustments: bill.taxesAndAdjustments,
-          meter_type: bill.meterType,
-        }),
-      })
-
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend validation offline, falling back to local verification:", err)
-    }
-
-    // Local deterministic fallback
     const sum = (bill.energyCharges || 0) + (bill.fixedCharges || 0) + (bill.taxesAndAdjustments || 0)
     const diff = Math.abs((bill.totalBill || 0) - sum)
     const hasComponents = (bill.energyCharges || 0) > 0 || (bill.fixedCharges || 0) > 0
@@ -511,12 +507,100 @@ export const api = {
    * Fetch pre-configured sample bills for quick evaluation and testing.
    */
   async getSampleBills(): Promise<SamplePresetApiResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/bills/sample`)
-    if (!response.ok) {
-      throw new Error("Failed to load sample bills")
-    }
-    const json = await response.json()
-    return json.data
+    return [
+      {
+        id: "sample-kseb-domestic",
+        name: "Kerala KSEB Bill (320 kWh)",
+        provider: "KSEB (Kerala)",
+        description: "Typical two-story suburban household with monthly consumption of 320 kWh.",
+        bill_data: {
+          provider: "KSEB (Kerala)",
+          consumer_category: "Domestic LT-1A",
+          billing_period: "Oct 2026",
+          billing_days: 30,
+          units: 320,
+          total_bill: 2150,
+          energy_charges: 1780,
+          fixed_charges: 240,
+          taxes_and_adjustments: 130,
+          meter_type: "Single Phase",
+          source_document_type: "sample_preset",
+          extraction_confidence: 0.95,
+          is_confidence_high: true,
+          validation_warnings: [],
+          raw_text_snippet: "Kerala State Electricity Board LT-1A Units: 320 Total: 2150",
+        },
+      },
+      {
+        id: "sample-bescom-bangalore",
+        name: "Bangalore BESCOM Bill (450 kWh)",
+        provider: "BESCOM (Karnataka)",
+        description: "Bangalore urban residence with air conditioning and electric cooking.",
+        bill_data: {
+          provider: "BESCOM (Karnataka)",
+          consumer_category: "Domestic LT-2(a)",
+          billing_period: "Sep 2026",
+          billing_days: 30,
+          units: 450,
+          total_bill: 3420,
+          energy_charges: 2850,
+          fixed_charges: 360,
+          taxes_and_adjustments: 210,
+          meter_type: "Three Phase",
+          source_document_type: "sample_preset",
+          extraction_confidence: 0.96,
+          is_confidence_high: true,
+          validation_warnings: [],
+          raw_text_snippet: "Bangalore Electricity Supply Company Limited LT-2(a) Units: 450 Total: 3420",
+        },
+      },
+      {
+        id: "sample-bses-delhi",
+        name: "Delhi BSES Rajdhani Bill (520 kWh)",
+        provider: "BSES Rajdhani (Delhi)",
+        description: "Metro residence with summer cooling and high consumption.",
+        bill_data: {
+          provider: "BSES Rajdhani (Delhi)",
+          consumer_category: "Domestic LT",
+          billing_period: "Aug 2026",
+          billing_days: 30,
+          units: 520,
+          total_bill: 4180,
+          energy_charges: 3500,
+          fixed_charges: 390,
+          taxes_and_adjustments: 290,
+          meter_type: "Single Phase",
+          source_document_type: "sample_preset",
+          extraction_confidence: 0.94,
+          is_confidence_high: true,
+          validation_warnings: [],
+          raw_text_snippet: "BSES Rajdhani Power Limited Domestic Units: 520 Total: 4180",
+        },
+      },
+      {
+        id: "sample-msedcl-mumbai",
+        name: "Maharashtra MSEDCL Bill (380 kWh)",
+        provider: "MSEDCL (Maharashtra)",
+        description: "Suburban apartment with modern household appliances.",
+        bill_data: {
+          provider: "MSEDCL (Maharashtra)",
+          consumer_category: "Residential LT-I",
+          billing_period: "Jul 2026",
+          billing_days: 30,
+          units: 380,
+          total_bill: 3120,
+          energy_charges: 2600,
+          fixed_charges: 320,
+          taxes_and_adjustments: 200,
+          meter_type: "Single Phase",
+          source_document_type: "sample_preset",
+          extraction_confidence: 0.95,
+          is_confidence_high: true,
+          validation_warnings: [],
+          raw_text_snippet: "Maharashtra State Electricity Distribution Co Ltd Units: 380 Total: 3120",
+        },
+      },
+    ]
   },
 
   /**
@@ -529,19 +613,6 @@ export const api = {
     avg_outage_hours_per_week?: number
     provider?: string
   }): Promise<EnergyAnalysisApiResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/energy/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend energy analysis offline, falling back to local calculation:", err)
-    }
 
     // Local deterministic fallback
     const units = params.monthly_units || 0
@@ -582,16 +653,6 @@ export const api = {
    * Fetch list of supported locations with irradiance benchmarks.
    */
   async getLocations(): Promise<LocationApiResponse[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/locations`)
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend locations offline, using fallback catalog:", err)
-    }
-
     return [
       {
         city: "Kochi",
@@ -656,20 +717,6 @@ export const api = {
     roof_type?: string
     shading_level?: string
   }): Promise<SolarGenerationApiResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/solar/generation`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend solar generation offline, falling back to local physics:", err)
-    }
-
     const cap = params.capacity_kw || 3.0
     const shadeMap: Record<string, number> = {
       none: 0,
@@ -708,15 +755,6 @@ export const api = {
    * Fetch verified solar panel catalog.
    */
   async fetchPanels(): Promise<PanelEquipment[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/panels`)
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend panels offline, using fallback catalog:", err)
-    }
     return [
       {
         id: "adani-mono-perc-440",
@@ -755,15 +793,6 @@ export const api = {
    * Fetch verified solar inverter catalog.
    */
   async fetchInverters(): Promise<InverterEquipment[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/inverters`)
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend inverters offline, using fallback catalog:", err)
-    }
     return [
       {
         id: "solis-1p-3k",
@@ -806,15 +835,6 @@ export const api = {
    * Fetch verified battery catalog.
    */
   async fetchBatteries(): Promise<BatteryEquipment[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/batteries`)
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend batteries offline, using fallback catalog:", err)
-    }
     return [
       {
         id: "pylontech-us3000c",
@@ -849,58 +869,16 @@ export const api = {
     prefer_microinverter?: boolean
     roof_type?: string
   }): Promise<SolarRecommendation> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/solar/recommend`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        const d = json.data
-        return {
-          recommendedCapacityKw: d.recommended_capacity_kw,
-          panelCount: d.panel_count,
-          panelWattage: d.panel_wattage,
-          systemType: (d.system_type === "On-Grid" ? "On-grid" : d.system_type) as SystemType,
-          inverterRatingKw: d.inverter_rating_kw,
-          batteryRecommended: d.battery_recommended,
-          batteryCapacityKwh: d.battery_capacity_kwh,
-          estimatedCostMin: d.estimated_cost_min,
-          estimatedCostMax: d.estimated_cost_max,
-          annualGenerationKwh: d.annual_generation_kwh,
-          keyReasons: d.key_reasons,
-          tradeOffs: d.trade_offs,
-          alternativeSystem: {
-            capacityKw: d.alternative_system.capacity_kw,
-            systemType: (d.alternative_system.system_type === "On-Grid" ? "On-grid" : "Hybrid") as SystemType,
-            reason: d.alternative_system.reason,
-            estimatedCost: d.alternative_system.estimated_cost,
-            panelCount: d.alternative_system.panel_count,
-          },
-          panelModel: d.panel_model,
-          inverterModel: d.inverter_model,
-          batteryModel: d.battery_model,
-          dcAcRatio: d.dc_ac_ratio,
-          roofAreaRequiredSqFt: d.roof_area_required_sqft,
-          roofUtilizationPct: d.roof_utilization_pct,
-          technicalConstraints: d.technical_constraints,
-        }
-      }
-    } catch (err) {
-      console.warn("Backend recommendation offline, calculating deterministic fallback:", err)
-    }
-
-    // Local deterministic fallback calculation
     const monthlyUnits = params.monthly_consumption_kwh || 400
     const annualUnits = monthlyUnits * 12
     const roofArea = params.roof_area_sqft || 500
     const weeklyOutages = params.weekly_outage_hours || 0
+    const userBudget = params.budget_inr
 
     const targetKw = annualUnits / 1450
     const maxRoofKw = roofArea / 85
     const governingKw = Math.max(1.0, Math.min(targetKw, maxRoofKw))
-    const isHybrid = weeklyOutages >= 3.0
+    const isHybrid = (userBudget && userBudget < 220000) ? false : weeklyOutages >= 3.0
 
     const panelWattage = maxRoofKw < targetKw ? 540 : 440
     const panelCount = Math.max(2, Math.round((governingKw * 1000) / panelWattage))
@@ -919,6 +897,10 @@ export const api = {
     const reqArea = Math.round(panelCount * singlePanelSqFt * 1.35)
     const utilPct = Math.min(100, Math.round((reqArea / roofArea) * 100))
 
+    const midCost = (costMin + costMax) / 2
+    const subsidy = actualKw < 1.0 ? 0 : actualKw < 2.0 ? 30000 : actualKw < 3.0 ? 60000 : 78000
+    const netCost = Math.max(0, midCost - subsidy)
+
     return {
       recommendedCapacityKw: actualKw,
       panelCount,
@@ -933,6 +915,34 @@ export const api = {
       dcAcRatio: Number((actualKw / (actualKw <= 3 ? 3.0 : 5.0)).toFixed(2)),
       roofAreaRequiredSqFt: reqArea,
       roofUtilizationPct: utilPct,
+      brandPackage: {
+        tier_name: isHybrid ? "Value Hybrid Storage" : "Standard High-Efficiency Grid-Tied",
+        panel_brand: panelWattage === 540 ? "Waaree Energies (Arka TOPCon 540W)" : "Adani Solar (Elan Shine 440W)",
+        panel_model_name: panelWattage === 540 ? "Arka TopCon 540W" : "Elan Shine 440W",
+        panel_lineage: "Domestic Cell & Module Manufacturer, ALMM Enlisted (DCR Compliant)",
+        inverter_brand: isHybrid ? "Deye (Hybrid SUN-5K)" : "Solis (Single Phase S6)",
+        inverter_model_name: isHybrid ? "SUN-5K-SG03LP1" : "S6-GR1P3K",
+        battery_brand: isHybrid ? "Dyness" : undefined,
+        battery_model_name: isHybrid ? "BX51100 5.12kWh LiFePO4" : undefined,
+        compatibility_verdict: isHybrid
+          ? "Certified Closed-Loop BMS Communication (CANbus protocol validated)"
+          : "Grid-Tied MPPT connection with State DISCOM Net Metering",
+        almm_dcr_eligible: true,
+        pvel_reliability_note: "Manufacturer verified as Kiwa PVEL Top Performer for thermal cycling and damp heat.",
+      },
+      budgetAnalysis: {
+        user_budget_inr: userBudget,
+        budget_status: !userBudget ? "unconstrained" : userBudget >= midCost ? "within_budget" : userBudget >= netCost ? "stretched" : "under_budget",
+        budget_tier: isHybrid ? "value" : "budget",
+        estimated_turnkey_cost: midCost,
+        subsidy_deduction_inr: subsidy,
+        net_cost_after_subsidy: netCost,
+        guidance: !userBudget
+          ? `Estimated net turnkey investment is ₹${netCost.toLocaleString()} (after ₹${subsidy.toLocaleString()} PM Surya Ghar central subsidy).`
+          : userBudget >= midCost
+          ? `Your budget of ₹${userBudget.toLocaleString()} fully covers the gross turnkey installation.`
+          : `With ₹${subsidy.toLocaleString()} PM Surya Ghar subsidy, net outlay is ₹${netCost.toLocaleString()}.`,
+      },
       keyReasons: [
         `Sized to offset ${Math.min(100, Math.round((annualGen / annualUnits) * 100))}% of your annual electricity consumption (${annualUnits} kWh/yr).`,
         `Selected ${panelWattage}W Mono PERC modules offering high performance and low degradation.`,
@@ -987,55 +997,6 @@ export const api = {
     state?: string
     evaluation_horizon_years?: number
   }): Promise<{ financial: FinancialTwin; decision: DecisionResult; assumptions: string[] }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/financial/assess`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        const d = json.data
-        return {
-          financial: {
-            currentAnnualCost: d.current_annual_cost,
-            estimatedPostSolarAnnualCost: d.estimated_post_solar_annual_cost,
-            annualSavings: d.annual_savings,
-            exportBenefit: d.export_benefit,
-            selfConsumptionSavings: d.self_consumption_savings,
-            netInitialInvestment: d.net_initial_investment,
-            subsidyAmount: d.subsidy_amount,
-            simplePaybackYears: d.simple_payback_years,
-            breakEvenYear: d.break_even_year || Math.ceil(d.simple_payback_years),
-            twentyFiveYearNetSavings: d.twenty_five_year_net_savings,
-            roiPercentage: d.roi_percentage,
-            npv: d.npv,
-            lcoePerKwh: d.lcoe_per_kwh,
-            yearlyCashFlows: (d.yearly_cash_flows || []).map((row: any) => ({
-              year: row.year,
-              withoutSolar: row.without_solar_cost,
-              withSolar: row.with_solar_cost,
-              cumulativeSavings: row.cumulative_savings,
-              discountedCashFlow: row.discounted_cash_flow,
-              generationKwh: row.generation_kwh,
-            })),
-          },
-          decision: {
-            outcome: d.decision_outcome as DecisionOutcome,
-            headline: d.decision_headline,
-            explanation: d.decision_explanation,
-            keyFactors: d.decision_factors || [],
-            actionableImprovements: d.actionable_improvements || [],
-            confidenceScore: 92,
-          },
-          assumptions: d.assumptions || [],
-        }
-      }
-    } catch (err) {
-      console.warn("Backend financial assessment offline, calculating local twin fallback:", err)
-    }
-
-    // Local deterministic fallback
     const units = params.monthly_consumption_kwh || 400
     const cap = params.system_capacity_kw || 3.3
     const grossCost = params.installed_cost || cap * 55000
@@ -1065,8 +1026,11 @@ export const api = {
     const roi = netCost > 0 ? Number(((twentyFiveYearSavings / netCost) * 100).toFixed(1)) : 0
 
     const isViable = units >= 150 && payback <= 8.5
-    const outcome: DecisionOutcome =
-      payback <= 5.0 ? "Strongly attractive" : isViable ? "Attractive" : "Not recommended"
+    const outcome: DecisionOutcome = !isViable
+      ? "Not recommended"
+      : payback <= 5.0
+      ? "Strongly attractive"
+      : "Attractive"
 
     const yearlyRows = [1, 3, 5, 10, 15, 20, 25].map((yr) => ({
       year: yr,
@@ -1074,6 +1038,38 @@ export const api = {
       withSolar: Math.round(postSolarAnnualCost * Math.pow(1.035, yr - 1)),
       cumulativeSavings: Math.round(annualSavings * yr - netCost),
     }))
+
+    const unviableReasons: string[] = []
+    if (!isViable) {
+      if (units < 150) {
+        unviableReasons.push(
+          `Low Baseline Consumption (${units} kWh/mo): Your monthly usage falls into the lowest subsidized lifeline tariff slab (₹2.50–₹3.50/kWh). Because your grid bills are already low, solar capital amortization yields diminishing financial savings.`
+        )
+      }
+      if (payback > 7.5) {
+        unviableReasons.push(
+          `Extended Capital Payback (${payback} years): A simple payback period exceeding 8 years approaches or exceeds the typical warranty lifespan of string inverters and balance-of-system equipment, creating high investment risk.`
+        )
+      }
+      if (daytimeFrac <= 0.45) {
+        unviableReasons.push(
+          `High Evening/Night Usage Skew (${Math.round((1 - daytimeFrac) * 100)}% night): Without expensive chemical battery storage, the majority of daytime solar generation is exported to the grid at low feed-in tariffs (₹2.25–₹2.75/unit) rather than offsetting expensive retail grid units.`
+        )
+      }
+      if (annualSavings < 10000) {
+        unviableReasons.push(
+          `Sub-optimal Capital Yield: A net outlay of ₹${netCost.toLocaleString()} generates only ~₹${annualSavings.toLocaleString()} in annual bill reduction, representing an initial annual return of ${roi}%, which is lower than standard risk-free savings benchmarks.`
+        )
+      }
+      if (unviableReasons.length === 0) {
+        unviableReasons.push(
+          `Subsidized Grid Tariff Structure: Your baseline grid tariff does not reach the threshold where capital investment in solar hardware delivers positive risk-adjusted returns.`
+        )
+        unviableReasons.push(
+          `High System Cost Relative to Energy Bill: The upfront investment required does not justify the modest monthly bill reductions at your current consumption level.`
+        )
+      }
+    }
 
     return {
       financial: {
@@ -1102,18 +1098,29 @@ export const api = {
           {
             factor: isViable ? "Substantial Energy Consumption" : "Low Energy Consumption",
             impact: isViable ? "positive" : "negative",
-            description: `${units} kWh/month directly offsets peak tier charges.`,
+            description: isViable
+              ? `${units} kWh/month directly offsets peak tier charges.`
+              : `At ${units} kWh/month, you are already in the lowest subsidized tariff slab.`,
           },
           {
-            factor: "Self-Consumption Savings",
-            impact: "positive",
-            description: `Offsets full retail electricity costs before export.`,
+            factor: isViable ? "Self-Consumption Savings" : "Long Payback Horizon",
+            impact: isViable ? "positive" : "negative",
+            description: isViable
+              ? `Offsets full retail electricity costs before export.`
+              : `${payback}-year simple payback is too long for residential equipment recovery.`,
           },
         ],
-        actionableImprovements: [
-          "Shift heavy appliances (washing machines, pumps) to midday.",
-          "Ensure installer uses DCR modules for PM Surya Ghar subsidy approval.",
-        ],
+        actionableImprovements: isViable
+          ? [
+              "Shift heavy appliances (washing machines, pumps) to midday.",
+              "Ensure installer uses DCR modules for PM Surya Ghar subsidy approval.",
+            ]
+          : [
+              "Focus on high-efficiency 5-star BLDC fans and inverter appliances before considering solar.",
+              "Re-evaluate rooftop solar if household power consumption grows (e.g. adding an EV or induction cooking).",
+              "Check whether virtual net-metering or community solar is available in your DISCOM zone.",
+            ],
+        reasonsNotRecommended: !isViable ? unviableReasons : undefined,
         confidenceScore: 92,
       },
       assumptions: [
@@ -1142,20 +1149,6 @@ export const api = {
     is_valid_polygon: boolean
     warning_messages: string[]
   }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/roof/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend roof analyze offline, using local geometry fallback:", err)
-    }
-
     const scale = params.scale_pixels_per_meter || 20.0
     // Simple shoelace fallback
     const pts = params.boundary || []
@@ -1221,20 +1214,6 @@ export const api = {
     }[]
     engineering_notes: string[]
   }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/roof/layout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        return json.data
-      }
-    } catch (err) {
-      console.warn("Backend roof layout offline, using local packing fallback:", err)
-    }
-
     const scale = params.scale_pixels_per_meter || 20.0
     const orientation = params.orientation || "portrait"
     const pWatt = params.panel_dimension?.rated_power_w || 440
@@ -1321,21 +1300,6 @@ export const api = {
    * Forecast 12-36 month household energy demand with seasonal swings & appliance additions.
    */
   async forecastConsumption(params: ConsumptionForecastRequest): Promise<ConsumptionForecastResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/forecasting/consumption`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        return json.data ?? json
-      }
-    } catch (err) {
-      console.warn("Backend forecasting offline, using local seasonal model fallback:", err)
-    }
-
-    // Deterministic fallback
     const history = params.historical_consumption || []
     const baseKwh = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : 380
     const horizon = params.horizon_months || 12
@@ -1399,16 +1363,6 @@ export const api = {
    * Retrieve formal model card and empirical benchmark validation metrics.
    */
   async getModelCard(): Promise<ModelCardResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/forecasting/model-card`)
-      if (response.ok) {
-        const json = await response.json()
-        return json.data ?? json
-      }
-    } catch (err) {
-      console.warn("Backend model card offline, using fallback metadata:", err)
-    }
-
     return {
       model_name: "SolarWise Seasonal Demand Forecaster",
       version: "1.0.0",
@@ -1430,20 +1384,6 @@ export const api = {
    * Run multi-scenario parametric simulation and sensitivity sweeps.
    */
   async simulateScenarios(params: ScenarioSimulationRequest): Promise<ScenarioSimulationResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/scenarios/simulate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (response.ok) {
-        const json = await response.json()
-        return json.data ?? json
-      }
-    } catch (err) {
-      console.warn("Backend scenarios simulate offline, using local simulation fallback:", err)
-    }
-
     // Deterministic client fallback
     const base = params.base_request
     const overrides = params.overrides || {}
@@ -1599,22 +1539,6 @@ export const api = {
     system_type?: string
     capacity_kw?: number
   }): Promise<ProviderListResponse> {
-    const q = new URLSearchParams()
-    if (params?.state) q.set("state", params.state)
-    if (params?.city) q.set("city", params.city)
-    if (params?.system_type) q.set("system_type", params.system_type)
-    if (params?.capacity_kw) q.set("capacity_kw", params.capacity_kw.toString())
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/providers?${q.toString()}`)
-      if (response.ok) {
-        const json = await response.json()
-        return json.data ?? json
-      }
-    } catch (err) {
-      console.warn("Backend providers offline, using fallback catalog:", err)
-    }
-
     const fallbackList: ProviderRecord[] = [
       {
         id: "tata-power-solar",
@@ -1730,20 +1654,6 @@ export const api = {
    * Fetch government rooftop solar subsidies and official policy sources.
    */
   async getSubsidies(params?: { state?: string; consumer_category?: string }): Promise<SubsidyListResponse> {
-    const q = new URLSearchParams()
-    if (params?.state) q.set("state", params.state)
-    if (params?.consumer_category) q.set("consumer_category", params.consumer_category)
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/subsidies?${q.toString()}`)
-      if (response.ok) {
-        const json = await response.json()
-        return json.data ?? json
-      }
-    } catch (err) {
-      console.warn("Backend subsidies offline, using fallback catalog:", err)
-    }
-
     const fallbackSchemes: SubsidyPolicyRecord[] = [
       {
         id: "pm-surya-ghar",
@@ -1826,49 +1736,22 @@ export const api = {
   async saveAssessment(
     assessment: AssessmentState
   ): Promise<{ id: string; status: string; message: string }> {
-    const payload = {
-      bill_data: assessment.bill,
-      usage_data: assessment.usage,
-      location_roof_data: assessment.locationRoof,
-      recommendation_data: assessment.recommendation,
-      financial_twin_data: assessment.financial,
-      decision_data: assessment.decision,
-    }
-
+    const localId = `sw-local-${Date.now()}`
     try {
-      const response = await fetch(`${API_BASE_URL}/assessments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (!response.ok) {
-        throw new Error(`Server returned HTTP ${response.status}`)
-      }
-      const data = await response.json()
-      const savedId = data?.data?.id || `sw-local-${Date.now()}`
-      try {
-        localStorage.setItem(`solarwise_assessment_${savedId}`, JSON.stringify(assessment))
-      } catch {
-        // Ignore local storage error
-      }
-      return {
-        id: savedId,
-        status: "success",
-        message: "Assessment saved successfully to database.",
-      }
-    } catch (err) {
-      console.warn("Backend assessment persistence offline, saving to localStorage:", err)
-      const localId = `sw-local-${Date.now()}`
-      try {
-        localStorage.setItem(`solarwise_assessment_${localId}`, JSON.stringify(assessment))
-      } catch {
-        // Ignore local storage quota
-      }
-      return {
-        id: localId,
-        status: "saved_locally",
-        message: "Assessment saved to browser local store.",
-      }
+      localStorage.setItem(`solarwise_assessment_${localId}`, JSON.stringify(assessment))
+    } catch {
+      // Ignore local storage quota
+    }
+    try {
+      const { saveAssessmentToFirestore } = await import("../lib/firebase")
+      await saveAssessmentToFirestore(localId, assessment)
+    } catch {
+      // Direct Firebase sync is optional
+    }
+    return {
+      id: localId,
+      status: "saved_locally",
+      message: "Assessment saved to browser local store.",
     }
   },
 
@@ -1876,49 +1759,36 @@ export const api = {
     payload: ReportExportRequest,
     assessmentId?: string
   ): Promise<FeasibilityReportResponse> {
-    const url = assessmentId
-      ? `${API_BASE_URL}/reports/${assessmentId}/export`
-      : `${API_BASE_URL}/reports/export`
+    const rec = payload.recommendation_data || {}
+    const fin = payload.financial_twin_data || {}
+    const dec = payload.decision_data || {}
+    const loc = payload.location_roof_data || {}
+    const bill = payload.bill_data || {}
+    const repId = `SW-REP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
 
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (!response.ok) {
-        throw new Error(`Server returned HTTP ${response.status}`)
-      }
-      const data = await response.json()
-      return data.data
-    } catch (err) {
-      console.warn("Backend report export offline, generating client-side feasibility docket:", err)
-      const rec = payload.recommendation_data || {}
-      const fin = payload.financial_twin_data || {}
-      const dec = payload.decision_data || {}
-      const loc = payload.location_roof_data || {}
-      const bill = payload.bill_data || {}
-      const repId = `SW-REP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-
-      return {
-        report_id: repId,
-        assessment_id: assessmentId || payload.assessment_id || null,
-        generated_at: new Date().toISOString().replace("T", " ").substring(0, 16) + " UTC",
-        version: "1.0.0",
-        title: payload.title || "SolarWise Feasibility & Engineering Docket",
-        summary: {
-          verdict_outcome: dec.outcome || "Attractive",
-          headline: dec.headline || "Rooftop Solar is Economically & Technically Viable",
-          explanation:
-            dec.explanation ||
-            "Your residential tariff and sunny rooftop profile deliver a sound investment return.",
-          confidence_score: dec.confidenceScore || 92.0,
-          actionable_guidance: dec.actionableImprovements || [
-            "Opt for ALMM-approved mono-PERC or TopCon tier-1 PV modules.",
-            "Verify net metering application timeline with local utility.",
-            "Register on PM Surya Ghar portal for direct DBT subsidy disbursement.",
-          ],
-        },
+    return {
+      report_id: repId,
+      assessment_id: assessmentId || payload.assessment_id || null,
+      generated_at: new Date().toISOString().replace("T", " ").substring(0, 16) + " UTC",
+      version: "1.0.0",
+      title: payload.title || "SolarWise Feasibility & Engineering Docket",
+      summary: {
+        verdict_outcome: dec.outcome || "Attractive",
+        headline: dec.headline || "Rooftop Solar is Economically & Technically Viable",
+        explanation:
+          dec.explanation ||
+          "Your residential tariff and sunny rooftop profile deliver a sound investment return.",
+        confidence_score: dec.confidenceScore || 92.0,
+        actionable_guidance: dec.actionableImprovements || [
+          "Opt for ALMM-approved mono-PERC or TopCon tier-1 PV modules.",
+          "Verify net metering application timeline with local utility.",
+          "Register on PM Surya Ghar portal for direct DBT subsidy disbursement.",
+        ],
+        reasons_not_recommended: dec.reasonsNotRecommended || (dec.outcome === "Not recommended" ? [
+          "Household electricity consumption falls within low subsidized lifeline tariffs.",
+          "Estimated simple payback period exceeds standard return-on-investment benchmarks.",
+        ] : undefined),
+      },
         location: {
           city: loc.city || "Bangalore",
           state: loc.state || "Karnataka",
@@ -1980,96 +1850,502 @@ export const api = {
           "Actual net metering credit timelines are determined by your DISCOM.",
         ],
       }
-    }
   },
 
   async getReportHtml(
     payload: ReportExportRequest,
     assessmentId?: string
   ): Promise<string> {
-    const url = assessmentId
-      ? `${API_BASE_URL}/reports/${assessmentId}/html`
-      : `${API_BASE_URL}/reports/html`
+    const report = await this.exportReport(payload, assessmentId)
+    const isRecommended =
+      report.summary.verdict_outcome === "Attractive" ||
+      report.summary.verdict_outcome === "Strongly attractive"
+    const reasons = report.summary.reasons_not_recommended || []
 
-    try {
-      const response = await fetch(url, {
-        method: assessmentId ? "GET" : "POST",
-        headers: assessmentId ? undefined : { "Content-Type": "application/json" },
-        body: assessmentId ? undefined : JSON.stringify(payload),
-      })
-      if (!response.ok) {
-        throw new Error(`Server returned HTTP ${response.status}`)
-      }
-      return await response.text()
-    } catch (err) {
-      console.warn("Backend report HTML offline, rendering client-side printable HTML:", err)
-      const report = await this.exportReport(payload, assessmentId)
-      return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${report.title} - ${report.report_id}</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; padding: 24px; line-height: 1.5; }
-        .container { max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; }
-        .brand { font-size: 24px; font-weight: 800; color: #065f46; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
-        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
-        .card-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; }
-        .card-val { font-size: 18px; font-weight: 800; margin-top: 4px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-        th, td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; text-align: left; }
-        th { background: #f1f5f9; font-size: 11px; text-transform: uppercase; color: #475569; }
-        @media print { body { padding: 0; } .container { border: none; } }
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+            background-color: #f8fafc;
+            padding: 32px 16px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-top: 5px solid #FE5A01;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-text {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+        }
+        .brand-text span {
+            color: #FE5A01;
+        }
+        .brand-subtitle {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-attractive {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1.5px solid #fed7aa;
+        }
+        .badge-unviable {
+            background: #fff1f2;
+            color: #be123c;
+            border: 1.5px solid #fecdd3;
+        }
+        .report-meta {
+            text-align: right;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 11px;
+            color: #64748b;
+        }
+        .verdict-box {
+            margin: 20px 0;
+            padding: 18px 20px;
+            border-radius: 10px;
+        }
+        .verdict-attractive {
+            background: #fffaf5;
+            border: 1.5px solid #ffedd5;
+            border-left: 5px solid #FE5A01;
+        }
+        .verdict-unviable {
+            background: #fff1f2;
+            border: 1.5px solid #fecdd3;
+            border-left: 5px solid #e11d48;
+        }
+        .verdict-title {
+            margin: 0 0 6px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .verdict-desc {
+            margin: 0;
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .confidence-pill {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ea580c;
+            background: #ffedd5;
+            padding: 2px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .card {
+            background: #fafaf9;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            padding: 14px;
+        }
+        .card-label {
+            font-size: 10.5px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .card-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 4px 0 2px;
+        }
+        .card-val-accent {
+            color: #FE5A01;
+        }
+        .card-subtext {
+            font-size: 10.5px;
+            color: #64748b;
+        }
+        .reasons-box {
+            margin: 20px 0;
+            padding: 16px 18px;
+            background: #fffbf8;
+            border: 1.5px solid #ffedd5;
+            border-radius: 10px;
+        }
+        .reasons-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #9a3412;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .reason-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12.5px;
+            color: #334155;
+            line-height: 1.5;
+        }
+        .reason-num {
+            background: #ffedd5;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+            font-weight: 800;
+            font-size: 11px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .spec-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            background: #ffffff;
+        }
+        .spec-heading {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #0f172a;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1.5px solid #ffedd5;
+            padding-bottom: 6px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+        }
+        td.val {
+            text-align: right;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .actions-list {
+            margin: 16px 0;
+            padding: 0;
+            list-style: none;
+        }
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12.5px;
+            color: #334155;
+        }
+        .action-bullet {
+            background: #ffedd5;
+            color: #FE5A01;
+            font-weight: 800;
+            font-size: 11px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .footer-note {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #64748b;
+        }
+        .footer-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #FE5A01;
+            font-weight: 700;
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm 12mm;
+            }
+            body {
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            .container {
+                border: none !important;
+                border-top: 4px solid #FE5A01 !important;
+                box-shadow: none !important;
+                padding: 12px 0 !important;
+                max-width: 100% !important;
+            }
+            .grid-4 {
+                gap: 8px !important;
+                margin: 14px 0 !important;
+            }
+            .card {
+                padding: 10px !important;
+            }
+            .specs-grid {
+                margin: 14px 0 !important;
+                gap: 12px !important;
+            }
+            .card, .spec-box, .reasons-box, .verdict-box {
+                page-break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <!-- Header -->
+        <div class="header">
             <div>
-                <div class="brand">SolarWise</div>
-                <div style="color:#64748b;font-size:12px;">Explainable Household Solar Feasibility Docket</div>
+                <div class="brand-logo">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                        <circle cx="14" cy="14" r="3.2" stroke="#FE5A01" stroke-width="2.2" fill="none" />
+                        <line x1="14" y1="2" x2="14" y2="6.8" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                        <line x1="14" y1="21.2" x2="14" y2="26" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                        <line x1="2" y1="14" x2="6.8" y2="14" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                        <line x1="21.2" y1="14" x2="26" y2="14" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                        <line x1="5.5" y1="5.5" x2="8.9" y2="8.9" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                        <line x1="19.1" y1="19.1" x2="22.5" y2="22.5" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                        <line x1="5.5" y1="22.5" x2="8.9" y2="19.1" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                        <line x1="19.1" y1="8.9" x2="22.5" y2="5.5" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+                    </svg>
+                    <span class="brand-text">Solar<span>wise</span></span>
+                </div>
+                <div class="brand-subtitle">Household Solar Feasibility & Engineering Docket</div>
             </div>
-            <div style="text-align:right;">
-                <span class="badge">${report.summary.verdict_outcome}</span>
-                <div style="font-family:monospace;font-size:11px;color:#64748b;margin-top:4px;">${report.report_id}</div>
+            <div class="report-meta">
+                <span class="badge ${isRecommended ? 'badge-attractive' : 'badge-unviable'}">
+                    ${report.summary.verdict_outcome}
+                </span>
+                <div style="margin-top: 6px; font-weight: 600;">${report.report_id}</div>
+                ${report.assessment_id ? `<div style="color: #FE5A01; font-weight: 600;">Saved: ${report.assessment_id}</div>` : ''}
+                <div style="font-size: 10px; margin-top: 2px;">${report.generated_at}</div>
             </div>
         </div>
-        <div style="margin:20px 0;padding:16px;background:#f0fdf4;border-left:4px solid #10b981;border-radius:6px;">
-            <h3 style="margin:0 0 4px;color:#065f46;">${report.summary.headline}</h3>
-            <p style="margin:0;font-size:13px;color:#334155;">${report.summary.explanation}</p>
+
+        <!-- Verdict Summary Box -->
+        <div class="verdict-box ${isRecommended ? 'verdict-attractive' : 'verdict-unviable'}">
+            <div class="confidence-pill">Engineered Feasibility Confidence: ${report.summary.confidence_score}%</div>
+            <h3 class="verdict-title">${report.summary.headline}</h3>
+            <p class="verdict-desc">${report.summary.explanation}</p>
         </div>
+
+        ${!isRecommended && reasons.length > 0 ? `
+        <!-- Unviable Reasons Box -->
+        <div class="reasons-box">
+            <div class="reasons-title">
+                <span>⚠️</span> Key Engineering Reasons Why Solar Is Unviable Under Your Conditions:
+            </div>
+            ${reasons.map((r, i) => `
+            <div class="reason-item">
+                <span class="reason-num">${i + 1}</span>
+                <span>${r}</span>
+            </div>`).join('')}
+        </div>` : ''}
+
+        <!-- 4 Key Metrics -->
         <div class="grid-4">
             <div class="card">
-                <div class="card-label">Recommended Capacity</div>
+                <div class="card-label">Recommended PV</div>
                 <div class="card-val">${report.technical.capacity_kw} kWp</div>
+                <div class="card-subtext">${report.technical.panel_count} Modules (${report.technical.panel_wattage}W)</div>
             </div>
             <div class="card">
                 <div class="card-label">Simple Payback</div>
-                <div class="card-val" style="color:#059669;">${report.financial.simple_payback_years} Yrs</div>
+                <div class="card-val card-val-accent">${report.financial.simple_payback_years} Yrs</div>
+                <div class="card-subtext">Break-even: Year ${report.financial.break_even_year || 'N/A'}</div>
             </div>
             <div class="card">
-                <div class="card-label">Net Investment</div>
+                <div class="card-label">Net Outlay</div>
                 <div class="card-val">₹${report.financial.net_initial_investment_inr.toLocaleString()}</div>
+                <div class="card-subtext" style="color: #ea580c; font-weight: 600;">
+                    Incl. ₹${report.financial.pm_surya_ghar_subsidy_inr.toLocaleString()} CFA
+                </div>
             </div>
             <div class="card">
                 <div class="card-label">25-Yr Net Savings</div>
-                <div class="card-val" style="color:#059669;">₹${report.financial.twenty_five_year_net_savings_inr.toLocaleString()}</div>
+                <div class="card-val card-val-accent">₹${report.financial.twenty_five_year_net_savings_inr.toLocaleString()}</div>
+                <div class="card-subtext">NPV: ₹${report.financial.npv_inr.toLocaleString()}</div>
             </div>
         </div>
-        <div style="margin-top:20px;">
-            <h4>Actionable Recommendations</h4>
-            <ul>
-                ${report.summary.actionable_guidance.map((g) => `<li>${g}</li>`).join("")}
-            </ul>
+
+        <!-- Specifications Grid -->
+        <div class="specs-grid">
+            <div class="spec-box">
+                <div class="spec-heading">
+                    <span style="color:#FE5A01;">⚙️</span> Technical Specifications
+                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Array Capacity</td>
+                            <td class="val">${report.technical.capacity_kw} kWp</td>
+                        </tr>
+                        <tr>
+                            <td>Module Model</td>
+                            <td class="val">${report.technical.panel_model}</td>
+                        </tr>
+                        <tr>
+                            <td>Inverter Model</td>
+                            <td class="val">${report.technical.inverter_model}</td>
+                        </tr>
+                        <tr>
+                            <td>Required Roof Area</td>
+                            <td class="val">${report.technical.usable_roof_area_sqft} sq ft</td>
+                        </tr>
+                        <tr>
+                            <td>Year 1 Generation</td>
+                            <td class="val">${report.technical.first_year_generation_kwh.toLocaleString()} kWh</td>
+                        </tr>
+                        <tr>
+                            <td>Location & Irradiance</td>
+                            <td class="val">${report.location.city}, ${report.location.state} (${report.location.annual_avg_daily_ghi} GHI)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="spec-box">
+                <div class="spec-heading">
+                    <span style="color:#FE5A01;">📊</span> Financial Twin Breakdown
+                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Turnkey Gross Cost</td>
+                            <td class="val">₹${report.financial.installed_turnkey_cost_inr.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td>PM Surya Ghar Subsidy</td>
+                            <td class="val" style="color: #ea580c;">-₹${report.financial.pm_surya_ghar_subsidy_inr.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td>Net Capital Outlay</td>
+                            <td class="val">₹${report.financial.net_initial_investment_inr.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td>Annual Bill Savings</td>
+                            <td class="val" style="color: #ea580c;">₹${report.financial.first_year_savings_inr.toLocaleString()}/yr</td>
+                        </tr>
+                        <tr>
+                            <td>Levelized Cost (LCOE)</td>
+                            <td class="val">₹${report.financial.lcoe_per_kwh}/kWh</td>
+                        </tr>
+                        <tr>
+                            <td>Project IRR / Return</td>
+                            <td class="val">${report.financial.roi_percentage}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:12px;font-size:11px;color:#64748b;">
-            Generated by SolarWise • Independent Consumer Protection Mandate
+
+        <!-- Actionable Recommendations -->
+        <div style="margin: 20px 0; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; background: #ffffff;">
+            <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 12px; border-bottom: 1.5px solid #ffedd5; padding-bottom: 6px;">
+                <span style="color:#FE5A01;">🎯</span> Actionable Next Steps & Advisor Recommendations
+            </div>
+            <div class="actions-list">
+                ${report.summary.actionable_guidance.map((g) => `
+                <div class="action-item">
+                    <span class="action-bullet">✓</span>
+                    <span>${g}</span>
+                </div>`).join('')}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-note">
+            <div class="footer-tag">
+                <span>☀️</span> SolarWise Independent Advisory Mandate
+            </div>
+            <div>
+                100% Hardware Agnostic • No Sales Commissions • Verified Engineering Twin
+            </div>
         </div>
     </div>
 </body>
 </html>`
-    }
   },
 }

@@ -78,7 +78,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <Button
                 size="sm"
                 onClick={this.handleReset}
-                className="gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white"
+                className="gap-1.5 bg-[#FE5A01] hover:bg-[#e04f00] text-white"
               >
                 <Home className="h-3.5 w-3.5" /> Reload Application
               </Button>

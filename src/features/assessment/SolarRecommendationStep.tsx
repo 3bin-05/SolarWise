@@ -7,6 +7,8 @@ import {
   Layers,
   Cpu,
   ShieldCheck,
+  Award,
+  Wallet,
 } from "lucide-react"
 import { SolarRecommendation } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
@@ -34,10 +36,17 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
     <div className="max-w-4xl mx-auto py-4 space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-2xl">Recommended System Sizing & Equipment</CardTitle>
-              <CardDescription>
+              {/* Badge: Step 5 */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Cpu className="w-3.5 h-3.5 text-[#FE5A01]" />
+                <span>Step 5: System Sizing</span>
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">
+                Recommended System Sizing & Equipment
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-neutral-600">
                 Engineered to maximize self-consumption and prevent uneconomical over-generation.
               </CardDescription>
             </div>
@@ -82,8 +91,8 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
 
           {/* Detailed Matched Equipment Cards */}
           <div className="space-y-3 pt-2">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-600 flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-emerald-600" /> Matched Hardware Components
+            <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-[#FE5A01]" /> Matched Hardware Components
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Solar Panels Card */}
@@ -214,11 +223,100 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
             </div>
           </div>
 
+          {/* Indian Market Brand Lineage & Certified Compatibility */}
+          {recommendation.brandPackage && (
+            <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/40 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200/60 pb-2">
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-[#FE5A01]" />
+                  <span className="font-bold text-xs uppercase tracking-wider text-neutral-900">
+                    Indian Solar Market Brand Pairing — {recommendation.brandPackage.tier_name}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {recommendation.brandPackage.almm_dcr_eligible && (
+                    <Badge variant="outline" className="text-[10px] bg-white border-orange-300 text-[#FE5A01] font-semibold">
+                      ✓ ALMM / DCR Eligible
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="text-[10px] bg-white border-slate-300 text-slate-800">
+                    PVEL Reliability Verified
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-neutral-700">
+                <div className="space-y-1">
+                  <p className="font-semibold text-neutral-900">
+                    PV Module: <span className="font-normal">{recommendation.brandPackage.panel_brand}</span>
+                  </p>
+                  <p className="text-[11px] text-neutral-600">
+                    {recommendation.brandPackage.pvel_reliability_note}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-semibold text-neutral-900">
+                    Inverter & Control: <span className="font-normal">{recommendation.brandPackage.inverter_brand}</span>
+                  </p>
+                  <p className="text-[11px] text-neutral-600">
+                    {recommendation.brandPackage.compatibility_verdict}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Budget Analysis & PM Surya Ghar Subsidy Breakdown */}
+          {recommendation.budgetAnalysis && (
+            <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/40 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
+                  <Wallet className="h-4 w-4 text-blue-700" /> Budget Fit & PM Surya Ghar Subsidy Alignment
+                </span>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] uppercase font-bold px-2 py-0.5 ${
+                    recommendation.budgetAnalysis.budget_status === "within_budget"
+                      ? "bg-orange-100 text-[#FE5A01] border-orange-300"
+                      : recommendation.budgetAnalysis.budget_status === "stretched"
+                      ? "bg-amber-100 text-amber-800 border-amber-300"
+                      : "bg-blue-100 text-blue-800 border-blue-300"
+                  }`}
+                >
+                  {recommendation.budgetAnalysis.budget_status.replace("_", " ")}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+                  <span className="text-neutral-500 block text-[11px]">Turnkey System Cost</span>
+                  <span className="font-bold text-neutral-900 text-sm">
+                    ₹{recommendation.budgetAnalysis.estimated_turnkey_cost.toLocaleString()}
+                  </span>
+                </div>
+                <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+                  <span className="text-[#FE5A01] block text-[11px]">PM Surya Ghar Subsidy</span>
+                  <span className="font-bold text-[#FE5A01] text-sm">
+                    - ₹{recommendation.budgetAnalysis.subsidy_deduction_inr.toLocaleString()}
+                  </span>
+                </div>
+                <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+                  <span className="text-neutral-500 block text-[11px]">Net Household Outlay</span>
+                  <span className="font-bold text-neutral-950 text-sm">
+                    ₹{recommendation.budgetAnalysis.net_cost_after_subsidy.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <p className="text-[11px] text-blue-950 pt-1 leading-relaxed">
+                {recommendation.budgetAnalysis.guidance}
+              </p>
+            </div>
+          )}
+
           {/* Technical Constraints Verification */}
           {constraints.length > 0 && (
             <div className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
               <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" /> Engineering & Regulatory Constraint Checks
+                <ShieldCheck className="h-4 w-4 text-[#FE5A01]" /> Engineering & Regulatory Constraint Checks
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {constraints.map((c, idx) => (
@@ -226,7 +324,7 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
                     key={idx}
                     className={`p-3 rounded-lg border text-xs ${
                       c.status === "pass"
-                        ? "bg-emerald-50/50 border-emerald-200/80 text-emerald-950"
+                        ? "bg-neutral-50/80 border-neutral-200 text-neutral-900"
                         : "bg-amber-50/50 border-amber-200/80 text-amber-950"
                     }`}
                   >
@@ -234,7 +332,7 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
                       <span>{c.name}</span>
                       <span
                         className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                          c.status === "pass" ? "bg-emerald-200 text-emerald-800" : "bg-amber-200 text-amber-800"
+                          c.status === "pass" ? "bg-orange-100 text-[#FE5A01]" : "bg-amber-200 text-amber-800"
                         }`}
                       >
                         {c.status}
@@ -252,12 +350,12 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200">
               <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2 mb-3">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Key Engineering Reasons
+                <CheckCircle2 className="h-4 w-4 text-[#FE5A01]" /> Key Engineering Reasons
               </h4>
               <ul className="space-y-2 text-xs text-neutral-600">
                 {recommendation.keyReasons.map((reason, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0 mt-1.5" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#FE5A01] shrink-0 mt-1.5" />
                     <span>{reason}</span>
                   </li>
                 ))}

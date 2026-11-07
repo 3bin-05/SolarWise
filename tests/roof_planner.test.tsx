@@ -40,11 +40,11 @@ describe("Solar Roof Digital Planner", () => {
 
     const landscapeBtn = screen.getByRole("button", { name: "Landscape (Wide)" })
     fireEvent.click(landscapeBtn)
-    expect(landscapeBtn).toHaveClass("bg-emerald-600")
+    expect(landscapeBtn).toHaveClass("bg-[#FE5A01]")
 
     const topconBtn = screen.getByRole("button", { name: "540W TopCon" })
     fireEvent.click(topconBtn)
-    expect(topconBtn).toHaveClass("bg-emerald-600")
+    expect(topconBtn).toHaveClass("bg-[#FE5A01]")
   })
 
   it("applies selected area and closes modal", async () => {

@@ -17,15 +17,15 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none"
+    "inline-flex items-center justify-center font-semibold rounded-[4px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FE5A01] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
 
   const variantStyles = {
     primary:
-      "bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 shadow-sm shadow-emerald-600/20",
+      "bg-[#FE5A01] text-white hover:bg-[#e04f00] active:scale-[0.99] shadow-xs shadow-[#FE5A01]/20",
     secondary:
       "bg-neutral-100 text-neutral-800 hover:bg-neutral-200 active:bg-neutral-300",
     outline:
-      "border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50 active:bg-neutral-100",
+      "border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50 active:bg-neutral-100 shadow-2xs",
     ghost:
       "text-neutral-700 hover:bg-neutral-100 active:bg-neutral-200",
     destructive:

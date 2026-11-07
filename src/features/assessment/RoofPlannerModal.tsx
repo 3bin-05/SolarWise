@@ -158,7 +158,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between bg-neutral-50/80">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
+            <div className="h-8 w-8 rounded-lg bg-[#FE5A01] text-white flex items-center justify-center font-bold">
               <Maximize2 className="h-4 w-4" />
             </div>
             <div>
@@ -189,7 +189,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                   const t = TEMPLATES.find((tpl) => tpl.id === e.target.value)
                   if (t) setSelectedTemplate(t)
                 }}
-                className="w-full text-xs font-medium bg-neutral-50 border border-neutral-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full text-xs font-medium bg-neutral-50 border border-neutral-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-[#FE5A01]"
               >
                 {TEMPLATES.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -208,7 +208,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                   onClick={() => setOrientation("portrait")}
                   className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                     orientation === "portrait"
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                      ? "bg-[#FE5A01] text-white border-[#FE5A01] shadow-xs"
                       : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50"
                   }`}
                 >
@@ -219,7 +219,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                   onClick={() => setOrientation("landscape")}
                   className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                     orientation === "landscape"
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                      ? "bg-[#FE5A01] text-white border-[#FE5A01] shadow-xs"
                       : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50"
                   }`}
                 >
@@ -237,7 +237,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                   onClick={() => setPanelWattage(440)}
                   className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                     panelWattage === 440
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                      ? "bg-[#FE5A01] text-white border-[#FE5A01] shadow-xs"
                       : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50"
                   }`}
                 >
@@ -248,7 +248,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                   onClick={() => setPanelWattage(540)}
                   className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                     panelWattage === 540
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                      ? "bg-[#FE5A01] text-white border-[#FE5A01] shadow-xs"
                       : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50"
                   }`}
                 >
@@ -321,8 +321,8 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                     y={p.y}
                     width={p.corners[1].x - p.corners[0].x}
                     height={p.corners[2].y - p.corners[1].y}
-                    fill="#059669"
-                    stroke="#10b981"
+                    fill="#ea580c"
+                    stroke="#f97316"
                     strokeWidth="1.2"
                     rx="1.5"
                   />
@@ -332,7 +332,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                     y1={p.y}
                     x2={p.x + (p.corners[1].x - p.corners[0].x) / 2}
                     y2={p.corners[2].y}
-                    stroke="#047857"
+                    stroke="#c2410c"
                     strokeWidth="0.8"
                   />
                 </g>
@@ -348,7 +348,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
             {/* Legend / Status Overlay */}
             <div className="absolute bottom-3 left-3 bg-neutral-800/90 border border-neutral-700/80 px-3 py-1.5 rounded-lg text-white text-[11px] flex items-center gap-3 backdrop-blur-xs">
               <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded bg-emerald-500 inline-block" />
+                <span className="h-2.5 w-2.5 rounded bg-[#FE5A01] inline-block" />
                 <span>PV Modules</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -383,7 +383,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
                 <span className="text-[10px] font-bold text-neutral-500 uppercase block">
                   Fitted Capacity
                 </span>
-                <span className="text-base font-extrabold text-emerald-700 font-mono">
+                <span className="text-base font-extrabold text-[#FE5A01] font-mono">
                   {layoutResult.total_dc_capacity_kw} kWp
                 </span>
                 <span className="text-[11px] text-neutral-500 block">
@@ -421,7 +421,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
           {layoutResult?.comparison_summary && (
             <div className="p-3.5 rounded-xl border border-neutral-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 text-neutral-700 font-medium">
-                <Layers className="h-4 w-4 text-emerald-600 shrink-0" />
+                <Layers className="h-4 w-4 text-[#FE5A01] shrink-0" />
                 <span>
                   <strong>Orientation Benchmark:</strong> Portrait yields{" "}
                   <strong>{layoutResult.comparison_summary[0].total_capacity_kw} kWp</strong> ({layoutResult.comparison_summary[0].panel_count} panels) vs Landscape{" "}

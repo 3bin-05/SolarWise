@@ -6,6 +6,7 @@ import {
   Save,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   Copy,
   ExternalLink,
   ShieldCheck,
@@ -149,7 +150,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800">
+            <div className="p-2 rounded-xl bg-orange-100 text-[#FE5A01]">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
@@ -161,7 +162,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                 {savedId && (
                   <>
                     <span>•</span>
-                    <span className="text-emerald-700 font-semibold">Saved: {savedId}</span>
+                    <span className="text-[#FE5A01] font-semibold">Saved: {savedId}</span>
                   </>
                 )}
               </div>
@@ -174,13 +175,13 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
               disabled={saveStatus === "saving" || saveStatus === "saved"}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition border ${
                 saveStatus === "saved"
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                  ? "bg-orange-50 text-[#FE5A01] border-orange-300"
                   : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-sm"
               }`}
             >
               {saveStatus === "saved" ? (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Saved
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[#FE5A01]" /> Saved
                 </>
               ) : (
                 <>
@@ -204,7 +205,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {loading ? (
             <div className="py-20 text-center space-y-3">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent" />
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#FE5A01] border-t-transparent" />
               <p className="text-sm font-semibold text-slate-600">
                 Compiling technical parameters, yield models, and verified installer registry...
               </p>
@@ -215,7 +216,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
               <div
                 className={`p-5 rounded-2xl border ${
                   isRecommended
-                    ? "bg-emerald-50/80 border-emerald-200 text-emerald-950"
+                    ? "bg-orange-50/80 border-orange-200 text-neutral-950"
                     : "bg-rose-50/80 border-rose-200 text-rose-950"
                 }`}
               >
@@ -223,7 +224,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                       isRecommended
-                        ? "bg-emerald-200 text-emerald-900"
+                        ? "bg-orange-100 text-[#FE5A01] border border-orange-200"
                         : "bg-rose-200 text-rose-900"
                     }`}
                   >
@@ -257,7 +258,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                     Simple Payback
                   </span>
-                  <span className="text-xl font-extrabold text-emerald-700 block mt-1">
+                  <span className="text-xl font-extrabold text-[#FE5A01] block mt-1">
                     {report.financial.simple_payback_years} Yrs
                   </span>
                   <span className="text-[11px] text-slate-500">
@@ -272,7 +273,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span className="text-xl font-extrabold text-slate-900 block mt-1">
                     ₹{report.financial.net_initial_investment_inr.toLocaleString()}
                   </span>
-                  <span className="text-[11px] text-emerald-700 font-semibold">
+                  <span className="text-[11px] text-[#FE5A01] font-semibold">
                     Incl. ₹{report.financial.pm_surya_ghar_subsidy_inr.toLocaleString()} CFA
                   </span>
                 </div>
@@ -281,7 +282,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                     25-Yr Net Savings
                   </span>
-                  <span className="text-xl font-extrabold text-emerald-700 block mt-1">
+                  <span className="text-xl font-extrabold text-[#FE5A01] block mt-1">
                     ₹{report.financial.twenty_five_year_net_savings_inr.toLocaleString()}
                   </span>
                   <span className="text-[11px] text-slate-500">
@@ -294,9 +295,9 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
               <div className="flex border-b border-slate-200 gap-4 text-xs font-bold uppercase tracking-wider">
                 <button
                   onClick={() => setActiveTab("overview")}
-                  className={`pb-2.5 transition border-b-2 ${
+                  className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "overview"
-                      ? "border-emerald-600 text-emerald-700"
+                      ? "border-[#FE5A01] text-[#FE5A01]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
@@ -304,9 +305,9 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab("technical")}
-                  className={`pb-2.5 transition border-b-2 ${
+                  className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "technical"
-                      ? "border-emerald-600 text-emerald-700"
+                      ? "border-[#FE5A01] text-[#FE5A01]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
@@ -314,9 +315,9 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab("financial")}
-                  className={`pb-2.5 transition border-b-2 ${
+                  className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "financial"
-                      ? "border-emerald-600 text-emerald-700"
+                      ? "border-[#FE5A01] text-[#FE5A01]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
@@ -324,9 +325,9 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab("providers")}
-                  className={`pb-2.5 transition border-b-2 ${
+                  className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "providers"
-                      ? "border-emerald-600 text-emerald-700"
+                      ? "border-[#FE5A01] text-[#FE5A01]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
@@ -337,6 +338,27 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
               {/* Tab 1: Overview */}
               {activeTab === "overview" && (
                 <div className="space-y-4">
+                  {!isRecommended && (
+                    <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/60 space-y-2.5">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                        Key Engineering Reasons Why Solar Is Unviable:
+                      </h4>
+                      <ul className="space-y-2 text-xs text-neutral-800">
+                        {(assessment?.decision.reasonsNotRecommended || [
+                          `Low Monthly Baseline Consumption (${assessment?.bill.units || 85} kWh): Billed under heavily subsidized lower slabs, meaning solar capital yields low monthly bill savings.`,
+                          `Extended Payback Horizon (${assessment?.financial.simplePaybackYears || 24} Years): Payback duration approaches or exceeds panel and component warranties.`,
+                          `Nighttime Usage Skew: Majority of consumption occurs when solar is not generating, resulting in low-tariff exports unless costly battery storage is installed.`,
+                        ]).map((reason, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-600 shrink-0 mt-1.5" />
+                            <span>{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                       Independent Action Guidance
@@ -344,7 +366,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                     <ul className="space-y-2 text-xs text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200">
                       {report.summary.actionable_guidance.map((step, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="h-4 w-4 text-[#FE5A01] shrink-0 mt-0.5" />
                           <span>{step}</span>
                         </li>
                       ))}
@@ -423,6 +445,22 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                           {report.technical.panel_count}x {report.technical.panel_model} ({report.technical.panel_wattage}W)
                         </td>
                       </tr>
+                      {report.technical.brand_tier && (
+                        <tr>
+                          <td className="py-2 text-slate-500">Hardware Ecosystem Tier</td>
+                          <td className="py-2 text-right font-semibold text-[#FE5A01]">
+                            {report.technical.brand_tier}
+                          </td>
+                        </tr>
+                      )}
+                      {report.technical.almm_compliance && (
+                        <tr>
+                          <td className="py-2 text-slate-500">ALMM / DCR Status</td>
+                          <td className="py-2 text-right font-medium text-slate-800">
+                            {report.technical.almm_compliance}
+                          </td>
+                        </tr>
+                      )}
                       <tr>
                         <td className="py-2 text-slate-500">Inverter Technology</td>
                         <td className="py-2 text-right font-medium text-slate-800">{report.technical.inverter_model}</td>
@@ -435,9 +473,17 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                             : "Grid-Tied (No Battery)"}
                         </td>
                       </tr>
+                      {report.technical.bms_compatibility && (
+                        <tr>
+                          <td className="py-2 text-slate-500">System Handshake</td>
+                          <td className="py-2 text-right text-[11px] text-slate-600">
+                            {report.technical.bms_compatibility}
+                          </td>
+                        </tr>
+                      )}
                       <tr>
                         <td className="py-2 text-slate-500">Year 1 Expected PV Yield</td>
-                        <td className="py-2 text-right font-bold text-emerald-700">
+                        <td className="py-2 text-right font-bold text-[#FE5A01]">
                           {report.technical.first_year_generation_kwh.toLocaleString()} kWh/year
                         </td>
                       </tr>
@@ -474,7 +520,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                       </tr>
                       <tr>
                         <td className="py-2 text-slate-500">PM Surya Ghar Central Subsidy (CFA)</td>
-                        <td className="py-2 text-right font-bold text-emerald-700">
+                        <td className="py-2 text-right font-bold text-[#FE5A01]">
                           -₹{report.financial.pm_surya_ghar_subsidy_inr.toLocaleString()}
                         </td>
                       </tr>
@@ -486,13 +532,13 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                       </tr>
                       <tr>
                         <td className="py-2 text-slate-500">First-Year Grid Bill Savings</td>
-                        <td className="py-2 text-right font-bold text-emerald-700">
+                        <td className="py-2 text-right font-bold text-[#FE5A01]">
                           ₹{report.financial.first_year_savings_inr.toLocaleString()} / yr
                         </td>
                       </tr>
                       <tr>
                         <td className="py-2 text-slate-500">Simple Payback Period</td>
-                        <td className="py-2 text-right font-bold text-emerald-700">
+                        <td className="py-2 text-right font-bold text-[#FE5A01]">
                           {report.financial.simple_payback_years} Years
                         </td>
                       </tr>
@@ -510,7 +556,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                       </tr>
                       <tr>
                         <td className="py-2 text-slate-500">Levelized Cost of Electricity (LCOE)</td>
-                        <td className="py-2 text-right font-bold text-emerald-700">
+                        <td className="py-2 text-right font-bold text-[#FE5A01]">
                           ₹{report.financial.lcoe_per_kwh.toFixed(2)} / kWh
                         </td>
                       </tr>
@@ -524,7 +570,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl border border-slate-200 bg-white">
                     <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                      <Award className="h-4 w-4 text-emerald-600" /> Applicable Subsidy Schemes
+                      <Award className="h-4 w-4 text-[#FE5A01]" /> Applicable Subsidy Schemes
                     </h5>
                     <div className="space-y-2">
                       {report.policy_sources.map((pol, idx) => (
@@ -538,7 +584,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                               href={pol.portal_url}
                               target="_blank"
                               rel="noreferrer"
-                              className="flex items-center gap-1 text-emerald-700 hover:text-emerald-800 font-semibold"
+                              className="flex items-center gap-1 text-[#FE5A01] hover:text-[#d44800] font-semibold"
                             >
                               Portal <ExternalLink className="h-3 w-3" />
                             </a>
@@ -566,7 +612,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                                 href={inst.website}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-[11px] text-emerald-700 hover:underline"
+                                className="text-[11px] text-[#FE5A01] hover:underline"
                               >
                                 Website
                               </a>
@@ -625,7 +671,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
               size="sm"
               onClick={handlePrint}
               disabled={!report}
-              className="text-xs gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white flex-1 sm:flex-initial"
+              className="text-xs gap-1.5 bg-[#FE5A01] hover:bg-[#e04f00] text-white flex-1 sm:flex-initial"
             >
               <Printer className="h-3.5 w-3.5" />
               Print / Save as PDF

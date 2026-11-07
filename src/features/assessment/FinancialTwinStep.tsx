@@ -55,8 +55,15 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-2xl">Solar Financial Twin</CardTitle>
-              <CardDescription>
+              {/* Badge: Step 6 */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Sliders className="w-3.5 h-3.5 text-[#FE5A01]" />
+                <span>Step 6: Financial Twin</span>
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">
+                Solar Financial Twin
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-neutral-600">
                 Calculates the precise financial gap between your current electricity trajectory and
                 post-solar cash flows.
               </CardDescription>
@@ -66,12 +73,12 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsScenarioModalOpen(true)}
-                className="gap-1.5 border-emerald-300 text-emerald-800 hover:bg-emerald-50 text-xs"
+                className="gap-1.5 border-orange-200 text-[#FE5A01] hover:bg-orange-50 text-xs"
               >
-                <Sliders className="w-3.5 h-3.5 text-emerald-600" />
+                <Sliders className="w-3.5 h-3.5 text-[#FE5A01]" />
                 Scenario Simulator
               </Button>
-              <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-100/70 px-3 py-1 rounded-full border border-emerald-200">
+              <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-[#FE5A01] bg-orange-100/70 px-3 py-1 rounded-[4px] border border-orange-200">
                 <ShieldCheck className="h-4 w-4" /> Verified Marginal Model
               </div>
             </div>
@@ -120,7 +127,7 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
               <div className="bg-white p-4 rounded-lg border border-neutral-200">
                 <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
                   <span>Self-Consumption Savings</span>
-                  <span className="font-bold text-emerald-700">Highest Value</span>
+                  <span className="font-bold text-[#FE5A01]">Highest Value</span>
                 </div>
                 <div className="text-xl font-extrabold text-neutral-950">
                   ₹{financial.selfConsumptionSavings.toLocaleString()}
@@ -145,7 +152,7 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
             </div>
 
             <div className="flex items-start gap-2 text-xs text-neutral-500 pt-1">
-              <Info className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              <Info className="h-4 w-4 text-[#FE5A01] shrink-0 mt-0.5" />
               <span>
                 <strong>SolarWise Principle:</strong> We do NOT assume exported power receives retail
                 rates. Over-sizing an installation to export energy usually degrades financial ROI.
@@ -178,7 +185,7 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
                       <td className="py-2.5 px-3 text-neutral-600">
                         ₹{row.withSolar.toLocaleString()}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-bold text-emerald-700">
+                      <td className="py-2.5 px-3 text-right font-bold text-[#FE5A01]">
                         ₹{row.cumulativeSavings.toLocaleString()}
                       </td>
                     </tr>

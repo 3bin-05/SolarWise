@@ -46,14 +46,7 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
       isCancelled = true
       clearTimeout(timer)
     }
-  }, [
-    bill.units,
-    bill.totalBill,
-    bill.energyCharges,
-    bill.fixedCharges,
-    bill.taxesAndAdjustments,
-    bill.provider,
-  ])
+  }, [bill])
 
   const handleChange = (field: keyof BillData, value: string | number) => {
     setBill((prev) => ({
@@ -74,8 +67,15 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-2xl">Confirm Extracted Bill Data</CardTitle>
-              <CardDescription>
+              {/* Badge: Step 2 */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Calculator className="w-3.5 h-3.5 text-[#FE5A01]" />
+                <span>Step 2: Data Verification</span>
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">
+                Confirm Extracted Bill Data
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-neutral-600">
                 Never silently trust OCR. Review and correct any extracted electricity bill fields.
               </CardDescription>
             </div>
@@ -99,12 +99,12 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
             <div
               className={`p-3.5 rounded-xl border text-xs flex items-start gap-3 ${
                 validation.arithmetic_matches
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                  ? "bg-orange-50/70 border-orange-200 text-neutral-900"
                   : "bg-amber-50 border-amber-200 text-amber-900"
               }`}
             >
               {validation.arithmetic_matches ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-4 w-4 text-[#FE5A01] shrink-0 mt-0.5" />
               ) : (
                 <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
               )}
@@ -115,7 +115,7 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
                       ? "Deterministic Arithmetic Verified"
                       : "Arithmetic Discrepancy Detected"}
                   </span>
-                  <span className="text-[11px] font-mono font-medium">
+                  <span className="text-[11px] font-mono font-medium text-[#FE5A01]">
                     Effective Tariff: ₹{effectiveRate}/kWh
                   </span>
                 </div>
@@ -136,7 +136,7 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
           )}
 
           {/* Primary Numbers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-neutral-50/70 border border-neutral-200/90">
             <div>
               <Label required>Monthly Electricity Units (kWh)</Label>
               <Input
@@ -156,7 +156,7 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
                 type="number"
                 value={bill.totalBill}
                 onChange={(e) => handleChange("totalBill", e.target.value)}
-                className="font-bold text-lg text-emerald-800"
+                className="font-bold text-lg text-neutral-900"
               />
               <span className="text-[11px] text-neutral-500 mt-1 block">
                 Net payable amount including taxes and fixed charges
@@ -230,7 +230,7 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
               <select
                 value={bill.meterType}
                 onChange={(e) => handleChange("meterType", e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#FE5A01] focus:border-[#FE5A01]"
               >
                 <option value="Single Phase">Single Phase</option>
                 <option value="Three Phase">Three Phase</option>

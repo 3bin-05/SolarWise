@@ -17,11 +17,11 @@ export default {
       colors: {
         border: "hsl(var(--border, 214.3 31.8% 91.4%))",
         input: "hsl(var(--input, 214.3 31.8% 91.4%))",
-        ring: "hsl(var(--ring, 142.1 76.2% 36.3%))",
+        ring: "hsl(var(--ring, 24 99% 50%))",
         background: "hsl(var(--background, 0 0% 100%))",
         foreground: "hsl(var(--foreground, 222.2 84% 4.9%))",
         primary: {
-          DEFAULT: "hsl(var(--primary, 142.1 76.2% 36.3%))", // Solar green
+          DEFAULT: "hsl(var(--primary, 24 99% 50%))", // SolarWise orange
           foreground: "hsl(var(--primary-foreground, 355.7 100% 97.3%))",
         },
         secondary: {

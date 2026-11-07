@@ -222,6 +222,12 @@ export const lowConsumptionNotRecommendedAssessment: AssessmentState = {
       "Focus on low-cost home energy efficiency rather than capital-intensive solar installation.",
       "Recheck if local community solar or virtual net metering becomes available.",
     ],
+    reasonsNotRecommended: [
+      "Low Baseline Electricity Consumption (85 kWh/mo): Your monthly usage is already billed under the lowest subsidized lifeline tariff slab (₹2.50–₹3.50/kWh), leaving minimal room for high capital expenditure amortization.",
+      "Extended Simple Payback Period (24 Years): At 24 years, capital recovery equals the entire 25-year panel warranty, offering negative risk-adjusted returns after inverter replacements.",
+      "75% Evening/Night Usage Skew: Generated solar energy cannot offset nighttime loads without expensive battery storage, and exported daytime power earns low feed-in tariffs (₹2.75/kWh).",
+      "Low Annual Cost Avoidance: Total electricity expenditure without solar is only ₹5,520/year; a ₹75,000 net installation yields an annual return under 4%, below risk-free savings benchmarks.",
+    ],
     confidenceScore: 92,
   },
 }

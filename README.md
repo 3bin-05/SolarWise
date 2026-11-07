@@ -5,16 +5,23 @@ Modern, accessible, explainable single-page application for the **SolarWise** ho
 ## Overview
 
 - **Framework**: React 19 + TypeScript + Vite
-- **Styling**: Tailwind CSS with custom design tokens (solar green accents, warm neutrals)
+- **Styling**: Tailwind CSS with SolarWise brand design tokens (`#FE5A01` orange accents, warm neutrals)
 - **Icons**: Lucide React
-- **Testing**: Vitest + React Testing Library + jsdom
+- **Testing**: Vitest + React Testing Library + jsdom (65 automated unit & integration tests)
 - **Linting**: Oxlint & TypeScript
-- **Deployment Target**: Vercel
+- **Deployment Target**: Vercel / Netlify / Cloudflare Pages
 
 ## Architecture & Principles
 
-- **Progressive Disclosure**: Plain-language explanations before technical depth.
+- **Dual Interaction Modes**:
+  - **Conversational Consultant**: Guided question-and-answer flow with instant bill analysis.
+  - **Technical Stepper View**: Deep engineering flow for power users and detailed assessments.
 - **Explainability**: Clear breakdowns of self-consumption, marginal avoided costs, export compensation, and payback.
+- **Transparent Honest Recommendations**: Dynamic engineering explanation engine that transparently details why rooftop solar is unviable under low-consumption or heavily shaded conditions.
+- **Maximum Performance**:
+  - Inline zero-dependency brand preloader in `index.html` for instant first paint.
+  - Fully responsive next-gen image pipeline (AVIF & WebP) with modern `<picture>` elements.
+  - Optimized vendor code-splitting (`vendor-react`, `vendor-icons`, `vendor-charts`).
 - **Decoupled Backend**: Zero server secrets in client bundles; typed contracts with the backend REST API.
 
 ## Project Structure

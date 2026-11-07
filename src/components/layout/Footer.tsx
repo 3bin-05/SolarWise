@@ -6,7 +6,7 @@ export const Footer: React.FC = () => {
     <footer className="border-t border-neutral-200/80 bg-white py-8 text-neutral-500 text-xs mt-auto">
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-neutral-600 font-medium">
-          <ShieldCheck className="h-4 w-4 text-emerald-600" />
+          <ShieldCheck className="h-4 w-4 text-[#FE5A01]" />
           <span>SolarWise Feasibility Engine</span>
           <span className="text-neutral-400">•</span>
           <span>Zero Paid AI APIs</span>

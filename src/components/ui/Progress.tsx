@@ -14,11 +14,11 @@ export const Progress: React.FC<ProgressProps> = ({
 
   return (
     <div
-      className={cn("w-full bg-neutral-200 rounded-full h-2 overflow-hidden", className)}
+      className={cn("w-full bg-neutral-200/80 rounded-full h-2 overflow-hidden", className)}
       {...props}
     >
       <div
-        className="bg-emerald-600 h-full rounded-full transition-all duration-300 ease-out"
+        className="bg-[#FE5A01] h-full rounded-full transition-all duration-300 ease-out"
         style={{ width: `${clampedValue}%` }}
       />
     </div>

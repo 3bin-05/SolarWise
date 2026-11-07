@@ -16,7 +16,7 @@ export const AssumptionPill: React.FC<AssumptionPillProps> = ({
   tooltip,
 }) => {
   const statusStyles = {
-    verified: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    verified: "bg-orange-50 text-orange-800 border-orange-200",
     estimate: "bg-neutral-100 text-neutral-800 border-neutral-200",
     warning: "bg-amber-50 text-amber-800 border-amber-200",
   }[status]

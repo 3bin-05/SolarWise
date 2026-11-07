@@ -81,8 +81,15 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-2xl">Daytime vs. Nighttime Electricity Usage</CardTitle>
-              <CardDescription>
+              {/* Badge: Step 3 */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Sun className="w-3.5 h-3.5 text-[#FE5A01]" />
+                <span>Step 3: Household Usage</span>
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">
+                Daytime vs. Nighttime Electricity Usage
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-neutral-600">
                 Solar panels only generate during daylight hours. Your daytime consumption determines
                 how much solar electricity offsets high retail tariff slabs directly.
               </CardDescription>
@@ -108,7 +115,7 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
           )}
 
           {/* Monthly Units Quick Override */}
-          <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="p-4 rounded-xl bg-neutral-50/70 border border-neutral-200/90 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <Label>Baseline Monthly Consumption</Label>
@@ -117,9 +124,9 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => setIsForecastModalOpen(true)}
-                  className="h-6 px-2 text-[11px] text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1"
+                  className="h-6 px-2 text-[11px] text-[#FE5A01] border-orange-200 hover:bg-orange-50 gap-1"
                 >
-                  <TrendingUp className="w-3 h-3 text-emerald-600" />
+                  <TrendingUp className="w-3 h-3 text-[#FE5A01]" />
                   Forecast Future (EV / AC)
                 </Button>
               </div>
@@ -148,7 +155,7 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
           </div>
 
           {/* Daytime vs Nighttime Slider */}
-          <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-4">
+          <div className="p-5 rounded-xl bg-neutral-50/70 border border-neutral-200/90 space-y-4">
             <div className="flex items-center justify-between text-sm font-semibold">
               <span className="flex items-center gap-1.5 text-amber-700">
                 <Sun className="h-4 w-4 text-amber-600" /> Daytime: {usage.daytimePercentage}%
@@ -171,11 +178,11 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
               step="5"
               value={usage.daytimePercentage}
               onChange={(e) => handleDaytimeChange(Number(e.target.value))}
-              className="w-full accent-emerald-600 cursor-pointer h-2 bg-neutral-200 rounded-lg"
+              className="w-full accent-[#FE5A01] cursor-pointer h-2 bg-neutral-200 rounded-lg"
             />
 
             <div className="flex items-start gap-2 text-xs text-neutral-600 bg-white p-3 rounded-lg border border-neutral-200/80">
-              <Info className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              <Info className="h-4 w-4 text-[#FE5A01] shrink-0 mt-0.5" />
               <span>
                 {usage.daytimePercentage >= 50
                   ? "Optimal daytime profile: Air conditioning, fans, and appliances consume power while the sun shines, maximizing avoided retail tariff savings."
@@ -188,7 +195,7 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div className="p-3.5 rounded-lg border border-neutral-200 bg-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-emerald-600" />
+                <TrendingUp className="h-4 w-4 text-[#FE5A01]" />
                 <span className="text-neutral-600">Projected Annual Demand</span>
               </div>
               <span className="font-bold text-neutral-900 font-mono">
@@ -198,10 +205,10 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
 
             <div className="p-3.5 rounded-lg border border-neutral-200 bg-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-amber-600" />
+                <Zap className="h-4 w-4 text-[#FE5A01]" />
                 <span className="text-neutral-600">Avoided Marginal Tariff</span>
               </div>
-              <span className="font-bold text-emerald-700 font-mono">
+              <span className="font-bold text-[#FE5A01] font-mono">
                 ₹{analysis?.marginal_tariff_rate.toFixed(2) ?? "7.00"}/kWh
               </span>
             </div>
@@ -222,7 +229,7 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
                 }
                 className={`p-3 rounded-xl border text-left text-sm transition-all cursor-pointer ${
                   !usage.hasFrequentOutages
-                    ? "border-emerald-600 bg-emerald-50/60 font-semibold text-emerald-950"
+                    ? "border-[#FE5A01] bg-orange-50/70 font-semibold text-orange-950 shadow-2xs"
                     : "border-neutral-200 hover:bg-neutral-50 text-neutral-700"
                 }`}
               >
@@ -241,7 +248,7 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
                 }
                 className={`p-3 rounded-xl border text-left text-sm transition-all cursor-pointer ${
                   usage.hasFrequentOutages
-                    ? "border-emerald-600 bg-emerald-50/60 font-semibold text-emerald-950"
+                    ? "border-[#FE5A01] bg-orange-50/70 font-semibold text-orange-950 shadow-2xs"
                     : "border-neutral-200 hover:bg-neutral-50 text-neutral-700"
                 }`}
               >

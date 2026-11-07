@@ -16,12 +16,12 @@ export const DecisionBadge: React.FC<DecisionBadgeProps> = ({
 }) => {
   const config = {
     "Strongly attractive": {
-      bg: "bg-emerald-600 text-white border-emerald-700",
+      bg: "bg-orange-600 text-white border-orange-700",
       icon: Sparkles,
       label: "Strongly Attractive",
     },
     Attractive: {
-      bg: "bg-emerald-500/15 text-emerald-800 border-emerald-500/30",
+      bg: "bg-orange-500/15 text-orange-800 border-orange-500/30",
       icon: CheckCircle2,
       label: "Attractive",
     },

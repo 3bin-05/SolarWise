@@ -99,8 +99,15 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-2xl">Location & Rooftop Characteristics</CardTitle>
-              <CardDescription>
+              {/* Badge: Step 4 */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Home className="w-3.5 h-3.5 text-[#FE5A01]" />
+                <span>Step 4: Roof & Location</span>
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">
+                Location & Rooftop Characteristics
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-neutral-600">
                 Solar generation depends on your regional solar irradiance, roof orientation, and shading.
               </CardDescription>
             </div>
@@ -119,7 +126,7 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
           {/* Quick City Presets */}
           <div>
             <Label className="text-xs text-neutral-600 mb-1.5 flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5 text-emerald-600" /> Popular Solar Zones
+              <MapPin className="h-3.5 w-3.5 text-[#FE5A01]" /> Popular Solar Zones
             </Label>
             <div className="flex flex-wrap gap-1.5">
               {locations.slice(0, 6).map((loc) => (
@@ -127,10 +134,10 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
                   key={loc.city}
                   type="button"
                   onClick={() => handleCitySelect(loc)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-[4px] text-xs font-medium border transition-all cursor-pointer ${
                     data.city.toLowerCase() === loc.city.toLowerCase()
-                      ? "bg-emerald-600 text-white border-emerald-600"
-                      : "bg-neutral-50 text-neutral-700 border-neutral-200 hover:border-emerald-500"
+                      ? "bg-[#FE5A01] text-white border-[#FE5A01] shadow-2xs font-semibold"
+                      : "bg-neutral-50 text-neutral-700 border-neutral-200 hover:border-[#FE5A01]"
                   }`}
                 >
                   {loc.city}
@@ -175,7 +182,7 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
                   onClick={() => setData((prev) => ({ ...prev, roofType: type }))}
                   className={`p-3 rounded-lg border text-xs font-semibold text-center transition-all cursor-pointer ${
                     data.roofType === type
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-xs"
+                      ? "border-[#FE5A01] bg-orange-50/70 text-orange-950 shadow-2xs"
                       : "border-neutral-200 text-neutral-700 hover:bg-neutral-50"
                   }`}
                 >
@@ -196,7 +203,7 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
               <button
                 type="button"
                 onClick={() => setIsPlannerOpen(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-300 cursor-pointer transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FE5A01] bg-orange-50 hover:bg-orange-100/70 px-2.5 py-1 rounded-[4px] border border-orange-200 cursor-pointer transition-colors"
               >
                 <Maximize2 className="h-3.5 w-3.5" /> 2D Digital Roof Planner
               </button>
@@ -215,7 +222,7 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
               </span>
             </div>
             {plannerStats?.count && (
-              <span className="text-[11px] font-semibold text-emerald-800 mt-1 block">
+              <span className="text-[11px] font-semibold text-[#FE5A01] mt-1 block">
                 ✓ Visual planner confirmed: {plannerStats.count} panels (~{plannerStats.capacityKw} kWp) physically fitted.
               </span>
             )}
@@ -233,9 +240,9 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
                   key={level}
                   type="button"
                   onClick={() => setData((prev) => ({ ...prev, shadingLevel: level }))}
-                  className={`py-2 px-3 rounded-lg border text-center font-medium transition-all cursor-pointer ${
+                  className={`py-2 px-3 rounded-[4px] border text-center font-medium transition-all cursor-pointer ${
                     data.shadingLevel === level
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-900"
+                      ? "border-[#FE5A01] bg-orange-50/70 text-orange-950 font-semibold shadow-2xs"
                       : "border-neutral-200 text-neutral-600 hover:bg-neutral-50"
                   }`}
                 >
@@ -257,36 +264,36 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
           {/* Physical Solar Generation Preview */}
           {generationPreview && (
             <div
-              className={`p-4 rounded-xl bg-emerald-50/50 border border-emerald-200/80 space-y-3 transition-opacity ${
+              className={`p-4 rounded-xl bg-orange-50/40 border border-orange-200/80 space-y-3 transition-opacity ${
                 isLoadingPreview ? "opacity-60" : "opacity-100"
               }`}
             >
-              <div className="flex items-center justify-between text-xs font-semibold text-emerald-950">
+              <div className="flex items-center justify-between text-xs font-semibold text-neutral-900">
                 <span className="flex items-center gap-1.5">
-                  <Sun className="h-4 w-4 text-amber-500" />
+                  <Sun className="h-4 w-4 text-[#FE5A01]" />
                   Estimated Generation Potential ({generationPreview.capacity_kw} kW capacity)
                 </span>
-                <span className="text-emerald-700 font-mono">
+                <span className="text-[#FE5A01] font-mono">
                   PR: {(generationPreview.system_losses.overall_performance_ratio * 100).toFixed(0)}%
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                <div className="bg-white p-2.5 rounded-lg border border-emerald-100">
+                <div className="bg-white p-2.5 rounded-lg border border-orange-200/60 shadow-2xs">
                   <div className="text-neutral-500 text-[11px]">Annual 1st-Year Yield</div>
                   <div className="font-bold text-neutral-900 text-sm font-mono mt-0.5">
                     {generationPreview.annual_generation_kwh.toLocaleString()} kWh
                   </div>
                 </div>
 
-                <div className="bg-white p-2.5 rounded-lg border border-emerald-100">
+                <div className="bg-white p-2.5 rounded-lg border border-orange-200/60 shadow-2xs">
                   <div className="text-neutral-500 text-[11px]">Specific Yield</div>
-                  <div className="font-bold text-emerald-700 text-sm font-mono mt-0.5">
+                  <div className="font-bold text-[#FE5A01] text-sm font-mono mt-0.5">
                     {generationPreview.specific_annual_yield_kwh_per_kwp} kWh/kWp
                   </div>
                 </div>
 
-                <div className="bg-white p-2.5 rounded-lg border border-emerald-100">
+                <div className="bg-white p-2.5 rounded-lg border border-orange-200/60 shadow-2xs">
                   <div className="text-neutral-500 text-[11px]">Conservative (P90)</div>
                   <div className="font-bold text-neutral-800 text-sm font-mono mt-0.5">
                     {generationPreview.scenarios.low_p90_annual_kwh.toLocaleString()} kWh

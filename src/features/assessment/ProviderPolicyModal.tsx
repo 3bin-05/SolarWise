@@ -88,13 +88,13 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
+            <div className="p-2 bg-orange-500/10 text-orange-400 rounded-lg">
               <Users className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-white">Verified Installer Directory & Subsidies</h3>
-                <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 text-xs">
+                <Badge variant="outline" className="border-orange-500/30 text-orange-400 text-xs">
                   MNRE & DISCOM Empaneled
                 </Badge>
               </div>
@@ -119,7 +119,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
               onClick={() => setActiveTab("providers")}
               className={`py-1.5 px-3 rounded-md font-medium transition-colors ${
                 activeTab === "providers"
-                  ? "bg-emerald-600 text-white shadow-sm"
+                  ? "bg-[#FE5A01] text-white shadow-sm"
                   : "text-slate-400 hover:text-white"
               }`}
             >
@@ -130,7 +130,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
               onClick={() => setActiveTab("subsidies")}
               className={`py-1.5 px-3 rounded-md font-medium transition-colors ${
                 activeTab === "subsidies"
-                  ? "bg-emerald-600 text-white shadow-sm"
+                  ? "bg-[#FE5A01] text-white shadow-sm"
                   : "text-slate-400 hover:text-white"
               }`}
             >
@@ -144,7 +144,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
               <select
                 value={selectedState}
                 onChange={(e) => setSelectedState(e.target.value)}
-                className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs"
+                className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-orange-500 text-xs"
               >
                 <option value="All">All Regions</option>
                 <option value="Karnataka">Karnataka</option>
@@ -163,7 +163,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                 <select
                   value={selectedSystemType}
                   onChange={(e) => setSelectedSystemType(e.target.value)}
-                  className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs"
+                  className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-orange-500 text-xs"
                 >
                   <option value="all">All Systems</option>
                   <option value="grid_tied">Grid-Tied</option>
@@ -211,8 +211,8 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                         </div>
                       </div>
                       {p.mnre_registered && (
-                        <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 text-[10px] gap-1 shrink-0">
-                          <ShieldCheck className="w-3 h-3 text-emerald-400" /> MNRE Empaneled
+                        <Badge variant="outline" className="border-orange-500/30 text-orange-400 text-[10px] gap-1 shrink-0">
+                          <ShieldCheck className="w-3 h-3 text-orange-400" /> MNRE Empaneled
                         </Badge>
                       )}
                     </div>
@@ -249,7 +249,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                       href={p.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold"
+                      className="inline-flex items-center gap-1 text-orange-400 hover:text-orange-300 font-semibold"
                     >
                       Website <ExternalLink className="w-3 h-3" />
                     </a>
@@ -282,7 +282,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                       href={sub.application_portal_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shrink-0 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FE5A01] hover:bg-[#e04f00] text-white rounded-lg text-xs font-semibold shrink-0 transition-colors"
                     >
                       Official Government Portal <ExternalLink className="w-3.5 h-3.5" />
                     </a>
@@ -294,7 +294,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                       {sub.subsidy_structure["1_kw_inr"] && (
                         <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
                           <span className="text-slate-400 block text-[11px]">1 kW System CFA</span>
-                          <span className="font-bold text-emerald-400 text-sm">
+                          <span className="font-bold text-orange-400 text-sm">
                             ₹{sub.subsidy_structure["1_kw_inr"].toLocaleString()}
                           </span>
                         </div>
@@ -302,7 +302,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                       {sub.subsidy_structure["2_kw_inr"] && (
                         <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
                           <span className="text-slate-400 block text-[11px]">2 kW System CFA</span>
-                          <span className="font-bold text-emerald-400 text-sm">
+                          <span className="font-bold text-orange-400 text-sm">
                             ₹{sub.subsidy_structure["2_kw_inr"].toLocaleString()}
                           </span>
                         </div>
@@ -310,7 +310,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                       {sub.subsidy_structure["3_kw_and_above_cap_inr"] && (
                         <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
                           <span className="text-slate-400 block text-[11px]">3 kW+ Maximum CFA</span>
-                          <span className="font-bold text-emerald-400 text-sm">
+                          <span className="font-bold text-orange-400 text-sm">
                             ₹{sub.subsidy_structure["3_kw_and_above_cap_inr"].toLocaleString()} (Cap)
                           </span>
                         </div>
@@ -332,7 +332,7 @@ export const ProviderPolicyModal: React.FC<ProviderPolicyModalProps> = ({
                     <ul className="space-y-1">
                       {sub.eligibility_criteria.map((crit, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-xs text-slate-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
                           <span>{crit}</span>
                         </li>
                       ))}

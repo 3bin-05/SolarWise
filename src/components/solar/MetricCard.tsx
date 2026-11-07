@@ -25,10 +25,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   className,
 }) => {
   const variantStyles = {
-    default: "bg-white border-neutral-200",
-    success: "bg-emerald-50/40 border-emerald-200",
+    default: "bg-white border-neutral-200/90 shadow-2xs",
+    success: "bg-orange-50/40 border-orange-200",
     warning: "bg-amber-50/40 border-amber-200",
-    highlight: "bg-emerald-600 text-white border-emerald-700",
+    highlight: "bg-gradient-to-br from-[#FE5A01] to-[#e04f00] text-white border-transparent shadow-sm",
   }[variant]
 
   const isHighlight = variant === "highlight"
@@ -39,7 +39,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         <span
           className={cn(
             "text-xs font-semibold uppercase tracking-wider",
-            isHighlight ? "text-emerald-100" : "text-neutral-500"
+            isHighlight ? "text-orange-100" : "text-neutral-500"
           )}
         >
           {label}
@@ -48,7 +48,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <div
             className={cn(
               "p-1.5 rounded-lg",
-              isHighlight ? "bg-emerald-700/60 text-white" : "bg-neutral-100 text-neutral-600"
+              isHighlight ? "bg-white/20 text-white" : "bg-neutral-100 text-neutral-600"
             )}
           >
             <Icon className="h-4 w-4" />
@@ -69,7 +69,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <span
             className={cn(
               "text-sm font-semibold",
-              isHighlight ? "text-emerald-100" : "text-neutral-600"
+              isHighlight ? "text-orange-100" : "text-neutral-600"
             )}
           >
             {unit}
@@ -78,14 +78,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </div>
 
       <div className="flex items-center justify-between text-xs mt-2 pt-2 border-t border-black/5">
-        <span className={cn(isHighlight ? "text-emerald-100" : "text-neutral-500")}>
+        <span className={cn(isHighlight ? "text-orange-100" : "text-neutral-500")}>
           {subtext}
         </span>
         <span
           className={cn(
             "text-[10px] font-mono px-1.5 py-0.5 rounded",
             isHighlight
-              ? "bg-emerald-700 text-emerald-100"
+              ? "bg-orange-700 text-orange-100"
               : "bg-neutral-100 text-neutral-600"
           )}
         >

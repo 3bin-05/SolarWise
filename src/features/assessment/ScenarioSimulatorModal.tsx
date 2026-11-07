@@ -138,13 +138,13 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
+            <div className="p-2 bg-orange-500/10 text-orange-400 rounded-lg">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-white">Scenario Simulator & Sensitivity Engine</h3>
-                <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 text-xs">
+                <Badge variant="outline" className="border-orange-500/30 text-orange-400 text-xs">
                   Real-Time Parametric Twin
                 </Badge>
               </div>
@@ -167,7 +167,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3 bg-slate-800/40 border border-slate-800 rounded-xl">
               <span className="text-xs text-slate-400">Simple Payback</span>
-              <p className="text-xl font-bold text-emerald-400 mt-1">
+              <p className="text-xl font-bold text-orange-400 mt-1">
                 {simCase?.simple_payback_years ?? "--"} <span className="text-xs font-normal text-slate-400">years</span>
               </p>
             </div>
@@ -182,7 +182,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
               <p className="text-xl font-bold text-slate-200 mt-1">
                 ₹{simCase ? Math.round(simCase.net_initial_investment).toLocaleString() : "--"}
               </p>
-              <span className="text-[10px] text-emerald-400">
+              <span className="text-[10px] text-orange-400">
                 Incl. ₹{simCase?.subsidy_amount ? Math.round(simCase.subsidy_amount).toLocaleString() : "0"} subsidy
               </span>
             </div>
@@ -214,7 +214,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-300">System Capacity</span>
-                  <span className="text-emerald-400 font-bold">{capacityKw.toFixed(1)} kWp</span>
+                  <span className="text-orange-400 font-bold">{capacityKw.toFixed(1)} kWp</span>
                 </div>
                 <input
                   type="range"
@@ -223,7 +223,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
                   step="0.5"
                   value={capacityKw}
                   onChange={(e) => setCapacityKw(parseFloat(e.target.value))}
-                  className="w-full accent-emerald-500"
+                  className="w-full accent-orange-500"
                 />
                 <div className="flex justify-between text-[10px] text-slate-500">
                   <span>1.0 kWp</span>
@@ -282,7 +282,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-300">Tariff Escalation Rate</span>
-                  <span className="text-emerald-400 font-bold">{tariffEscalation}% / yr</span>
+                  <span className="text-orange-400 font-bold">{tariffEscalation}% / yr</span>
                 </div>
                 <input
                   type="range"
@@ -291,7 +291,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
                   step="0.5"
                   value={tariffEscalation}
                   onChange={(e) => setTariffEscalation(parseFloat(e.target.value))}
-                  className="w-full accent-emerald-500"
+                  className="w-full accent-orange-500"
                 />
                 <div className="flex justify-between text-[10px] text-slate-500">
                   <span>0% (Flat)</span>
@@ -356,7 +356,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
                 onClick={() => setActiveTab("comparison")}
                 className={`py-2 px-4 border-b-2 font-medium transition-colors ${
                   activeTab === "comparison"
-                    ? "border-emerald-500 text-emerald-400"
+                    ? "border-orange-500 text-orange-400"
                     : "border-transparent text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -367,7 +367,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
                 onClick={() => setActiveTab("sensitivity")}
                 className={`py-2 px-4 border-b-2 font-medium transition-colors ${
                   activeTab === "sensitivity"
-                    ? "border-emerald-500 text-emerald-400"
+                    ? "border-orange-500 text-orange-400"
                     : "border-transparent text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -396,7 +396,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
                     <div className="space-y-1.5 pt-2 border-t border-slate-800/80 text-xs">
                       <div className="flex justify-between">
                         <span className="text-slate-400">Payback:</span>
-                        <span className="font-bold text-emerald-400">{sc.simple_payback_years} yrs</span>
+                        <span className="font-bold text-orange-400">{sc.simple_payback_years} yrs</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">25-Yr Net:</span>
@@ -421,7 +421,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Tariff Sweep */}
                 <div className="p-3.5 bg-slate-800/30 border border-slate-800 rounded-xl space-y-2">
-                  <span className="text-xs font-semibold text-emerald-400 block">
+                  <span className="text-xs font-semibold text-orange-400 block">
                     Tariff Escalation Sensitivity
                   </span>
                   <div className="space-y-1 text-xs">
@@ -429,7 +429,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
                       <div key={i} className="flex justify-between py-1 border-b border-slate-800/40">
                         <span className="text-slate-400">{p.parameter_label}</span>
                         <span className="font-mono text-slate-200">{p.simple_payback_years} yrs</span>
-                        <span className="font-mono text-emerald-400 font-semibold">₹{Math.round(p.npv).toLocaleString()} NPV</span>
+                        <span className="font-mono text-orange-400 font-semibold">₹{Math.round(p.npv).toLocaleString()} NPV</span>
                       </div>
                     ))}
                   </div>
@@ -472,8 +472,8 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
 
           {/* Simulation Insights Callout */}
           {insights.length > 0 && (
-            <div className="p-3.5 bg-emerald-950/30 border border-emerald-500/20 rounded-xl space-y-1 text-xs text-slate-300">
-              <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
+            <div className="p-3.5 bg-orange-950/30 border border-orange-500/20 rounded-xl space-y-1 text-xs text-slate-300">
+              <span className="font-semibold text-orange-400 flex items-center gap-1.5">
                 <TrendingUp className="w-3.5 h-3.5" /> Deterministic Simulation Takeaways:
               </span>
               <ul className="list-disc list-inside space-y-0.5 text-slate-300/90 text-[11px] pt-1">
@@ -490,7 +490,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
           <div className="text-xs text-slate-400">
             Selected configuration: <span className="text-white font-bold">{capacityKw} kWp</span>
             {batteryKwh > 0 && <span className="text-sky-400 font-semibold"> + {batteryKwh} kWh Battery</span>}
-            {" • "}Payback: <span className="text-emerald-400 font-bold">{simCase?.simple_payback_years ?? "--"} yrs</span>
+            {" • "}Payback: <span className="text-orange-400 font-bold">{simCase?.simple_payback_years ?? "--"} yrs</span>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button variant="outline" size="sm" onClick={onClose} className="border-slate-700 text-xs flex-1 sm:flex-initial">
@@ -513,7 +513,7 @@ export const ScenarioSimulatorModal: React.FC<ScenarioSimulatorModalProps> = ({
                   })
                   onClose()
                 }}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1.5 flex-1 sm:flex-initial"
+                className="bg-[#FE5A01] hover:bg-[#e04f00] text-white text-xs gap-1.5 flex-1 sm:flex-initial"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Apply Scenario to Assessment

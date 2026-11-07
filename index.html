@@ -4,9 +4,255 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>solarwise-frontend</title>
+    <meta name="theme-color" content="#FE5A01" />
+    <meta
+      name="description"
+      content="SolarWise — Intelligent rooftop solar feasibility assessment, clean energy transition, and real-time household decarbonization platform."
+    />
+    <title>SolarWise — Clean Energy & Decarbonization</title>
+
+    <!-- SolarWise Customized Preloader Styles (Instant First Paint) -->
+    <style>
+      #solarwise-preloader {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fafbfc;
+        background-image:
+          radial-gradient(circle at 50% 45%, rgba(254, 90, 1, 0.10) 0%, rgba(254, 90, 1, 0.02) 40%, rgba(250, 251, 252, 0.98) 70%),
+          linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+        background-size: 100% 100%, 36px 36px, 36px 36px;
+        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+      }
+
+      #solarwise-preloader.sw-fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .sw-preloader-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 24px;
+        max-width: 360px;
+        user-select: none;
+      }
+
+      .sw-emblem-wrap {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .sw-emblem-pulse {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(254, 90, 1, 0.3) 0%, rgba(254, 90, 1, 0) 70%);
+        animation: sw-pulse-halo 2.2s ease-in-out infinite;
+      }
+
+      .sw-emblem-ring {
+        position: absolute;
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        border: 2px dashed rgba(254, 90, 1, 0.35);
+        animation: sw-spin 18s linear infinite;
+      }
+
+      .sw-emblem-svg {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        filter: drop-shadow(0 4px 10px rgba(254, 90, 1, 0.35));
+        animation: sw-sun-breath 3s ease-in-out infinite;
+      }
+
+      .sw-brand {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.6px;
+        color: #0f172a;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 1px;
+      }
+
+      .sw-brand-accent {
+        color: #FE5A01;
+      }
+
+      .sw-subtitle {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        letter-spacing: 0.3px;
+        margin-bottom: 24px;
+      }
+
+      .sw-progress-track {
+        width: 220px;
+        height: 5px;
+        background: #f1f5f9;
+        border: 1px solid #fed7aa;
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 12px;
+      }
+
+      .sw-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #f59e0b, #FE5A01, #ea580c);
+        border-radius: 9999px;
+        animation: sw-progress-anim 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      .sw-status-text {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #94a3b8;
+        letter-spacing: 0.2px;
+        min-height: 18px;
+        transition: opacity 0.25s ease;
+      }
+
+      @keyframes sw-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes sw-pulse-halo {
+        0% { transform: scale(0.85); opacity: 0.6; }
+        50% { transform: scale(1.4); opacity: 0.15; }
+        100% { transform: scale(0.85); opacity: 0.6; }
+      }
+
+      @keyframes sw-sun-breath {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+      }
+
+      @keyframes sw-progress-anim {
+        0% { width: 0%; }
+        25% { width: 35%; }
+        60% { width: 75%; }
+        100% { width: 100%; }
+      }
+    </style>
   </head>
   <body>
+    <!-- SolarWise Customized Preloader -->
+    <div id="solarwise-preloader" aria-label="Loading SolarWise Platform">
+      <div class="sw-preloader-content">
+        <div class="sw-emblem-wrap">
+          <div class="sw-emblem-pulse"></div>
+          <div class="sw-emblem-ring"></div>
+          <svg
+            class="sw-emblem-svg"
+            viewBox="0 0 28 28"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!-- Inner ring -->
+            <circle cx="14" cy="14" r="3.2" stroke="#FE5A01" stroke-width="2.2" fill="#FE5A01" fill-opacity="0.25" />
+            <!-- Cardinal rays -->
+            <line x1="14" y1="2" x2="14" y2="6.8" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+            <line x1="14" y1="21.2" x2="14" y2="26" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+            <line x1="2" y1="14" x2="6.8" y2="14" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+            <line x1="21.2" y1="14" x2="26" y2="14" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+            <!-- Diagonal rays -->
+            <line x1="5.5" y1="5.5" x2="8.9" y2="8.9" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+            <line x1="19.1" y1="19.1" x2="22.5" y2="22.5" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+            <line x1="5.5" y1="22.5" x2="8.9" y2="19.1" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+            <line x1="19.1" y1="8.9" x2="22.5" y2="5.5" stroke="#FE5A01" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </div>
+
+        <div class="sw-brand">
+          Solar<span class="sw-brand-accent">wise</span>
+        </div>
+        <div class="sw-subtitle">Clean Energy & Decarbonization Platform</div>
+
+        <div class="sw-progress-track">
+          <div class="sw-progress-bar"></div>
+        </div>
+
+        <div class="sw-status-text" id="sw-status-text">
+          Calibrating solar physics engine...
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        var statusEl = document.getElementById('sw-status-text');
+        var messages = [
+          'Calibrating solar physics engine...',
+          'Loading regional DISCOM tariffs...',
+          'Preparing clean energy platform...'
+        ];
+        var msgIndex = 0;
+        var intervalId = setInterval(function() {
+          if (!statusEl) return;
+          msgIndex = (msgIndex + 1) % messages.length;
+          statusEl.style.opacity = '0';
+          setTimeout(function() {
+            if (statusEl) {
+              statusEl.textContent = messages[msgIndex];
+              statusEl.style.opacity = '1';
+            }
+          }, 150);
+        }, 650);
+
+        function dismiss() {
+          clearInterval(intervalId);
+          var preloader = document.getElementById('solarwise-preloader');
+          if (preloader && !preloader.classList.contains('sw-fade-out')) {
+            preloader.classList.add('sw-fade-out');
+            setTimeout(function() {
+              if (preloader && preloader.parentNode) {
+                preloader.parentNode.removeChild(preloader);
+              }
+            }, 550);
+          }
+        }
+
+        // Dismiss on full load with minimum 750ms display, or max fallback 2200ms
+        var minTimePassed = false;
+        var windowLoaded = false;
+        setTimeout(function() {
+          minTimePassed = true;
+          if (windowLoaded) dismiss();
+        }, 750);
+
+        window.addEventListener('load', function() {
+          windowLoaded = true;
+          if (minTimePassed) dismiss();
+        });
+
+        // Safety timeout so user is never blocked
+        setTimeout(dismiss, 2400);
+      })();
+    </script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

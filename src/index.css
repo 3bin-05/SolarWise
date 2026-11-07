@@ -13,8 +13,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Solar green brand accent */
-    --primary: 152 76% 36%;
+    /* SolarWise orange brand accent */
+    --primary: 24 99% 50%;
     --primary-foreground: 355.7 100% 97.3%;
 
     --secondary: 40 20% 94%;
@@ -32,13 +32,28 @@
 
     --border: 40 15% 90%;
     --input: 40 15% 90%;
-    --ring: 152 76% 36%;
+    --ring: 24 99% 50%;
 
     --radius: 0.5rem;
   }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
   @apply bg-background text-foreground antialiased;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
+
+/* Precise grid background matching Solarwise hero design */
+.solar-grid-bg {
+  background-color: #fafbfd;
+  background-image: 
+    linear-gradient(to right, rgba(210, 222, 235, 0.65) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(210, 222, 235, 0.65) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+

@@ -109,6 +109,30 @@ export interface BatteryEquipment {
   description: string
 }
 
+export interface BrandPackage {
+  tier_name: string
+  panel_brand: string
+  panel_model_name: string
+  panel_lineage: string
+  inverter_brand: string
+  inverter_model_name: string
+  battery_brand?: string | null
+  battery_model_name?: string | null
+  compatibility_verdict: string
+  almm_dcr_eligible: boolean
+  pvel_reliability_note: string
+}
+
+export interface BudgetAnalysis {
+  user_budget_inr?: number | null
+  budget_status: "within_budget" | "stretched" | "under_budget" | "unconstrained"
+  budget_tier: "budget" | "value" | "premium"
+  estimated_turnkey_cost: number
+  subsidy_deduction_inr: number
+  net_cost_after_subsidy: number
+  guidance: string
+}
+
 export interface SolarRecommendation {
   recommendedCapacityKw: number
   panelCount: number
@@ -137,6 +161,8 @@ export interface SolarRecommendation {
   roofAreaRequiredSqFt?: number
   roofUtilizationPct?: number
   technicalConstraints?: ConstraintCheck[]
+  brandPackage?: BrandPackage
+  budgetAnalysis?: BudgetAnalysis
 }
 
 export interface FinancialTwin {
@@ -174,6 +200,7 @@ export interface DecisionResult {
   }[]
   actionableImprovements: string[]
   confidenceScore: number
+  reasonsNotRecommended?: string[]
 }
 
 export interface AssessmentState {
