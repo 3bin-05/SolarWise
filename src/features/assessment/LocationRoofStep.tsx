@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   Home,
   ArrowRight,
@@ -25,12 +25,14 @@ export interface LocationRoofStepProps {
   initialLocationRoof: LocationRoof
   onConfirm: (updated: LocationRoof) => void
   onBack: () => void
+  onChange?: (updated: LocationRoof) => void
 }
 
 export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
   initialLocationRoof,
   onConfirm,
   onBack,
+  onChange,
 }) => {
   const [data, setData] = useState<LocationRoof>(initialLocationRoof)
   const [locations, setLocations] = useState<LocationApiResponse[]>([])
@@ -38,6 +40,20 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [isPlannerOpen, setIsPlannerOpen] = useState(false)
   const [plannerStats, setPlannerStats] = useState<{ count?: number; capacityKw?: number } | null>(null)
+
+  // Synchronize state if initialLocationRoof updates externally (e.g. from Guided View)
+  useEffect(() => {
+    setData(initialLocationRoof)
+  }, [initialLocationRoof])
+
+  const isFirstMount = useRef(true)
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
+    }
+    onChange?.(data)
+  }, [data, onChange])
 
   const roofTypes: RoofType[] = ["RCC Flat", "Sloped Tiled", "Metal Sheet", "Asbestos / Other"]
 
@@ -100,8 +116,8 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               {/* Badge: Step 4 */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
-                <Home className="w-3.5 h-3.5 text-[#FE5A01]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Home className="w-3.5 h-3.5 text-[#c2410c]" />
                 <span>Step 4: Roof & Location</span>
               </div>
               <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">
@@ -134,7 +150,7 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
                   key={loc.city}
                   type="button"
                   onClick={() => handleCitySelect(loc)}
-                  className={`px-3 py-1 rounded-[4px] text-xs font-medium border transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-md text-xs font-medium border transition-all cursor-pointer ${
                     data.city.toLowerCase() === loc.city.toLowerCase()
                       ? "bg-[#FE5A01] text-white border-[#FE5A01] shadow-2xs font-semibold"
                       : "bg-neutral-50 text-neutral-700 border-neutral-200 hover:border-[#FE5A01]"
@@ -203,7 +219,7 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
               <button
                 type="button"
                 onClick={() => setIsPlannerOpen(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FE5A01] bg-orange-50 hover:bg-orange-100/70 px-2.5 py-1 rounded-[4px] border border-orange-200 cursor-pointer transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#c2410c] bg-orange-50 hover:bg-orange-100/70 px-2.5 py-1 rounded-md border border-orange-200 cursor-pointer transition-colors"
               >
                 <Maximize2 className="h-3.5 w-3.5" /> 2D Digital Roof Planner
               </button>
@@ -217,12 +233,12 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
                 }
                 className="pr-16 font-bold"
               />
-              <span className="absolute right-3 top-2.5 text-xs text-neutral-400 font-semibold">
+              <span className="absolute right-3 top-2.5 text-xs text-neutral-500 font-semibold">
                 sq ft
               </span>
             </div>
             {plannerStats?.count && (
-              <span className="text-[11px] font-semibold text-[#FE5A01] mt-1 block">
+              <span className="text-[11px] font-semibold text-[#c2410c] mt-1 block">
                 ✓ Visual planner confirmed: {plannerStats.count} panels (~{plannerStats.capacityKw} kWp) physically fitted.
               </span>
             )}
@@ -240,7 +256,7 @@ export const LocationRoofStep: React.FC<LocationRoofStepProps> = ({
                   key={level}
                   type="button"
                   onClick={() => setData((prev) => ({ ...prev, shadingLevel: level }))}
-                  className={`py-2 px-3 rounded-[4px] border text-center font-medium transition-all cursor-pointer ${
+                  className={`py-2 px-3 rounded-md border text-center font-medium transition-all cursor-pointer ${
                     data.shadingLevel === level
                       ? "border-[#FE5A01] bg-orange-50/70 text-orange-950 font-semibold shadow-2xs"
                       : "border-neutral-200 text-neutral-600 hover:bg-neutral-50"

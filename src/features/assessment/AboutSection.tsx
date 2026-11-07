@@ -22,7 +22,7 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
           {/* Left Content Column */}
           <div className="lg:col-span-6 xl:col-span-5 z-20 flex flex-col items-start justify-center">
             {/* Badge: Clean Energy & Decarbonization */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[4px] border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-5 shadow-2xs backdrop-blur-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-5 shadow-2xs backdrop-blur-xs">
               <svg className="w-4 h-4 text-[#FE5A01] fill-[#FE5A01] shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
                 <path d="M2 21c0-3 1.85-5.36 5.08-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   Sun,
   Moon,
@@ -23,6 +23,7 @@ export interface HouseholdUsageStepProps {
   providerName?: string
   onConfirm: (updatedUsage: HouseholdUsage) => void
   onBack: () => void
+  onChange?: (updatedUsage: HouseholdUsage) => void
 }
 
 export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
@@ -30,10 +31,25 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
   providerName = "generic",
   onConfirm,
   onBack,
+  onChange,
 }) => {
   const [usage, setUsage] = useState<HouseholdUsage>(initialUsage)
   const [analysis, setAnalysis] = useState<EnergyAnalysisApiResponse | null>(null)
   const [isForecastModalOpen, setIsForecastModalOpen] = useState<boolean>(false)
+
+  // Synchronize state if initialUsage updates externally (e.g. from Guided View)
+  useEffect(() => {
+    setUsage(initialUsage)
+  }, [initialUsage])
+
+  const isFirstMount = useRef(true)
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
+    }
+    onChange?.(usage)
+  }, [usage, onChange])
 
   useEffect(() => {
     let isCancelled = false
@@ -82,8 +98,8 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               {/* Badge: Step 3 */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
-                <Sun className="w-3.5 h-3.5 text-[#FE5A01]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Sun className="w-3.5 h-3.5 text-[#c2410c]" />
                 <span>Step 3: Household Usage</span>
               </div>
               <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">

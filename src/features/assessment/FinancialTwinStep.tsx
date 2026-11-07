@@ -56,8 +56,8 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               {/* Badge: Step 6 */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
-                <Sliders className="w-3.5 h-3.5 text-[#FE5A01]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Sliders className="w-3.5 h-3.5 text-[#c2410c]" />
                 <span>Step 6: Financial Twin</span>
               </div>
               <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">
@@ -73,12 +73,12 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsScenarioModalOpen(true)}
-                className="gap-1.5 border-orange-200 text-[#FE5A01] hover:bg-orange-50 text-xs"
+                className="gap-1.5 border-orange-200 text-[#c2410c] hover:bg-orange-50 text-xs rounded-lg"
               >
-                <Sliders className="w-3.5 h-3.5 text-[#FE5A01]" />
+                <Sliders className="w-3.5 h-3.5 text-[#c2410c]" />
                 Scenario Simulator
               </Button>
-              <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-[#FE5A01] bg-orange-100/70 px-3 py-1 rounded-[4px] border border-orange-200">
+              <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-[#c2410c] bg-orange-100/70 px-3 py-1 rounded-md border border-orange-200">
                 <ShieldCheck className="h-4 w-4" /> Verified Marginal Model
               </div>
             </div>

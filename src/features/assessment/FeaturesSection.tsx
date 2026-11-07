@@ -38,7 +38,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
           {/* Left Content Column */}
           <div className="lg:col-span-5 xl:col-span-5 z-20 flex flex-col items-start">
             {/* Badge: Clean Energy & Decarbonization */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[4px] border border-neutral-300 bg-white/90 text-xs sm:text-sm font-semibold text-neutral-900 mb-5 shadow-2xs backdrop-blur-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-300 bg-white/90 text-xs sm:text-sm font-semibold text-neutral-900 mb-5 shadow-2xs backdrop-blur-xs">
               <svg
                 className="w-4 h-4 text-[#FE5A01] fill-[#FE5A01] shrink-0"
                 viewBox="0 0 24 24"
@@ -148,15 +148,15 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
               <button
                 type="button"
                 onClick={onStart}
-                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-[4px] flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-lg flex items-center gap-2 shadow-xs transition-all cursor-pointer"
               >
-                Explore Features <span className="text-lg leading-none">→</span>
+                Calculate Solar Feasibility <span className="text-lg leading-none">→</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleSeeHowItWorks}
-                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-6 py-3 rounded-[4px] flex items-center gap-2.5 transition-all cursor-pointer"
+                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all cursor-pointer"
               >
                 <span className="w-5 h-5 rounded-full border border-neutral-900 flex items-center justify-center shrink-0">
                   <svg className="w-2.5 h-2.5 translate-x-px text-neutral-900 fill-neutral-900" viewBox="0 0 24 24">

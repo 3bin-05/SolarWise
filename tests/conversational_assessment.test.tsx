@@ -195,4 +195,45 @@ describe("SolarWise Conversational Assessment Consultant", () => {
       screen.getByText(/Let's start by understanding your electricity consumption/i)
     ).toBeInTheDocument()
   })
+
+  it("shows mode tooltip and guarantees two-way step and data synchronization between Guided View and Detailed View", async () => {
+    render(<App initialMode="conversational" />)
+
+    // Start assessment
+    fireEvent.click(screen.getByRole("button", { name: /Start Free Assessment/i }))
+
+    // Verify Guided View and Detailed View buttons are present in the mode toggle
+    expect(screen.getByRole("button", { name: /Guided View/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /Detailed View - Technical Stepper View/i })).toBeInTheDocument()
+
+    // Test info tooltip button
+    const infoBtn = screen.getByRole("button", { name: /Information about assessment view modes/i })
+    expect(infoBtn).toBeInTheDocument()
+    fireEvent.click(infoBtn)
+    expect(screen.getByRole("tooltip")).toBeInTheDocument()
+    expect(screen.getByText(/Assessment View Modes/i)).toBeInTheDocument()
+
+    // In Guided View (Stage 1), select a bill preset to advance to Stage 2
+    fireEvent.click(screen.getByRole("button", { name: /BESCOM Bangalore/i }))
+    await waitFor(() => {
+      expect(screen.getByText(/Great! I've reviewed your electricity bill/i)).toBeInTheDocument()
+    })
+
+    // Now switch to Detailed View (Stepper)
+    const detailedToggle = screen.getByRole("button", { name: /Detailed View - Technical Stepper View/i })
+    fireEvent.click(detailedToggle)
+
+    // Detailed View must automatically be at Step 2 (Confirm Data) without resetting to Step 1!
+    expect(screen.getAllByText(/Step 2 of 7/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/Confirm Extracted Bill Data/i)).toBeInTheDocument()
+    // Verify extracted bill data is retained in Step 2 inputs
+    expect(screen.getByDisplayValue("450")).toBeInTheDocument()
+
+    // Switch back to Guided View
+    const guidedToggle = screen.getByRole("button", { name: /Guided View - Conversational Consultant/i })
+    fireEvent.click(guidedToggle)
+
+    // Guided View should remain at Stage 2 without resetting!
+    expect(screen.getByText(/Great! I've reviewed your electricity bill/i)).toBeInTheDocument()
+  })
 })

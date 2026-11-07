@@ -39,8 +39,8 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               {/* Badge: Step 5 */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
-                <Cpu className="w-3.5 h-3.5 text-[#FE5A01]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Cpu className="w-3.5 h-3.5 text-[#c2410c]" />
                 <span>Step 5: System Sizing</span>
               </div>
               <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">

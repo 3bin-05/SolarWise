@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   CheckCircle2,
   AlertTriangle,
@@ -18,16 +18,32 @@ export interface BillConfirmStepProps {
   initialBill: BillData
   onConfirm: (updatedBill: BillData) => void
   onBack: () => void
+  onChange?: (updatedBill: BillData) => void
 }
 
 export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
   initialBill,
   onConfirm,
   onBack,
+  onChange,
 }) => {
   const [bill, setBill] = useState<BillData>(initialBill)
   const [validation, setValidation] = useState<ValidationApiResponse | null>(null)
   const [isValidating, setIsValidating] = useState<boolean>(false)
+
+  // Synchronize state if initialBill updates externally (e.g. from Guided View)
+  useEffect(() => {
+    setBill(initialBill)
+  }, [initialBill])
+
+  const isFirstMount = useRef(true)
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
+    }
+    onChange?.(bill)
+  }, [bill, onChange])
 
   // Re-run validation whenever numbers change
   useEffect(() => {
@@ -49,10 +65,14 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
   }, [bill])
 
   const handleChange = (field: keyof BillData, value: string | number) => {
-    setBill((prev) => ({
-      ...prev,
-      [field]: typeof prev[field] === "number" ? Number(value) || 0 : value,
-    }))
+    setBill((prev) => {
+      const next = {
+        ...prev,
+        [field]: typeof prev[field] === "number" ? Number(value) || 0 : value,
+      }
+      onChange?.(next)
+      return next
+    })
   }
 
   const componentSum =
@@ -68,8 +88,8 @@ export const BillConfirmStep: React.FC<BillConfirmStepProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               {/* Badge: Step 2 */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
-                <Calculator className="w-3.5 h-3.5 text-[#FE5A01]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 mb-2 shadow-2xs backdrop-blur-xs">
+                <Calculator className="w-3.5 h-3.5 text-[#c2410c]" />
                 <span>Step 2: Data Verification</span>
               </div>
               <CardTitle className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight">

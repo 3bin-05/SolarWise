@@ -65,10 +65,10 @@ export const HowItWorksSection: React.FC = () => {
         {/* Top Header */}
         <div className="flex flex-col items-start mb-4 sm:mb-6">
           {/* Badge: How It Works? */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[4px] border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-4 shadow-2xs backdrop-blur-xs">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-4 shadow-2xs backdrop-blur-xs">
             {/* Brand Accent Gear Icon */}
             <svg
-              className="w-4 h-4 text-[#FE5A01] fill-[#FE5A01]/20"
+              className="w-4 h-4 text-[#c2410c] fill-[#c2410c]/20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -168,7 +168,7 @@ export const HowItWorksSection: React.FC = () => {
               </div>
 
               {/* Number Badge */}
-              <div className="inline-block px-2.5 py-0.5 rounded-[4px] bg-orange-50 border border-orange-200/90 text-[#FE5A01] font-bold text-xs mb-2.5 shadow-2xs">
+              <div className="inline-block px-2.5 py-0.5 rounded-md bg-orange-50 border border-orange-200/90 text-[#c2410c] font-bold text-xs mb-2.5 shadow-2xs">
                 {step.number}
               </div>
 

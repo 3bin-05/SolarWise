@@ -9,6 +9,7 @@ import houseWebp500 from "../../assets/house-500.webp"
 import { FeaturesSection } from "./FeaturesSection"
 import { HowItWorksSection } from "./HowItWorksSection"
 import { AboutSection } from "./AboutSection"
+import { FAQSection } from "./FAQSection"
 import { LandingFooter } from "./LandingFooter"
 
 export interface LandingStepProps {
@@ -74,7 +75,7 @@ export const LandingStep: React.FC<LandingStepProps> = ({
           {/* Left Text & CTA Column */}
           <div className="relative z-20 max-w-2xl lg:max-w-[620px] xl:max-w-[680px] flex flex-col items-start">
             {/* Badge: Clean Energy & Decarbonization */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[4px] border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-6 shadow-2xs backdrop-blur-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-6 shadow-2xs backdrop-blur-xs">
               {/* Brand Accent Leaf Icon */}
               <svg
                 className="w-4 h-4 text-[#FE5A01] fill-[#FE5A01] shrink-0"
@@ -104,7 +105,7 @@ export const LandingStep: React.FC<LandingStepProps> = ({
                 type="button"
                 onClick={onStart}
                 aria-label="Start Free Assessment - Get Started"
-                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-[4px] flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-lg flex items-center gap-2 shadow-xs transition-all cursor-pointer"
               >
                 Get Started <span className="text-lg leading-none">→</span>
               </button>
@@ -112,7 +113,7 @@ export const LandingStep: React.FC<LandingStepProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDemoModal(true)}
-                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-6 py-3 rounded-[4px] flex items-center gap-2.5 transition-all cursor-pointer"
+                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all cursor-pointer"
               >
                 <span className="w-5 h-5 rounded-full border border-neutral-900 flex items-center justify-center shrink-0">
                   <svg className="w-2.5 h-2.5 translate-x-px text-neutral-900 fill-neutral-900" viewBox="0 0 24 24">
@@ -212,7 +213,10 @@ export const LandingStep: React.FC<LandingStepProps> = ({
       {/* SECTION 4: About Section strictly matching reference UI design with house3.png */}
       <AboutSection onStart={onStart} />
 
-      {/* SECTION 5: Contact & Footer Section matching reference UI design with footer.png & dark wave layer */}
+      {/* SECTION 5: Frequently Asked Questions (FAQ) */}
+      <FAQSection />
+
+      {/* SECTION 6: Contact & Footer Section matching reference UI design with footer.png & dark wave layer */}
       <LandingFooter onStart={onStart} />
 
       {/* Hidden test and accessibility triggers (ensures 100% passing test suites while visual UI is purely hero & features) */}
@@ -280,7 +284,7 @@ export const LandingStep: React.FC<LandingStepProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDemoModal(false)}
-                className="px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 rounded-[4px] cursor-pointer"
+                className="px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg cursor-pointer"
               >
                 Close
               </button>
@@ -290,7 +294,7 @@ export const LandingStep: React.FC<LandingStepProps> = ({
                   setShowDemoModal(false)
                   onStart()
                 }}
-                className="px-5 py-2 text-sm font-semibold text-white bg-[#FE5A01] hover:bg-[#e04f00] rounded-[4px] shadow-xs cursor-pointer"
+                className="px-5 py-2 text-sm font-semibold text-white bg-[#FE5A01] hover:bg-[#e04f00] rounded-lg shadow-xs cursor-pointer"
               >
                 Start Assessment →
               </button>

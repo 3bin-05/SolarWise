@@ -47,6 +47,20 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showResetModal, setShowResetModal] = useState(false)
+
+  const handleRequestReset = () => {
+    if (currentStep > 0) {
+      setShowResetModal(true)
+    } else {
+      onReset()
+    }
+  }
+
+  const handleConfirmReset = () => {
+    setShowResetModal(false)
+    onReset()
+  }
 
   const scrollToTarget = (section: "home" | "features" | "how-it-works" | "about" | "contact") => {
     if (section === "home") {
@@ -90,10 +104,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Brand Logo */}
         <div
           className="flex items-center gap-2.5 cursor-pointer select-none"
-          onClick={onReset}
+          onClick={handleRequestReset}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && onReset()}
+          onKeyDown={(e) => e.key === "Enter" && handleRequestReset()}
         >
           <SolarSunBurst className="w-8 h-8 shrink-0" />
           <span className="font-extrabold text-2xl tracking-tight text-neutral-900">
@@ -104,116 +118,35 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Center Navigation Links - Visible on all pages */}
         <nav className="hidden md:flex items-center gap-9">
-          <a
-            href="#home"
-            onClick={(e) => {
-              e.preventDefault()
-              handleNavClick("home")
-            }}
-            className={`flex items-center font-bold text-sm tracking-wide transition-colors ${
-              currentStep === 0 && activeSection === "home"
-                ? "text-[#FE5A01]"
-                : "text-neutral-900 hover:text-neutral-700"
-            }`}
-          >
-            {currentStep === 0 && activeSection === "home" ? (
-              <>
-                <span className="mr-1.5">[</span>
-                <span>Home</span>
-                <span className="ml-1.5">]</span>
-              </>
-            ) : (
-              <span>Home</span>
-            )}
-          </a>
-          <a
-            href="#features"
-            onClick={(e) => {
-              e.preventDefault()
-              handleNavClick("features")
-            }}
-            className={`flex items-center font-bold text-sm tracking-wide transition-colors ${
-              currentStep === 0 && activeSection === "features"
-                ? "text-[#FE5A01]"
-                : "text-neutral-900 hover:text-neutral-700 font-semibold"
-            }`}
-          >
-            {currentStep === 0 && activeSection === "features" ? (
-              <>
-                <span className="mr-1.5">[</span>
-                <span>Features</span>
-                <span className="ml-1.5">]</span>
-              </>
-            ) : (
-              <span>Features</span>
-            )}
-          </a>
-          <a
-            href="#how-it-works"
-            onClick={(e) => {
-              e.preventDefault()
-              handleNavClick("how-it-works")
-            }}
-            className={`flex items-center font-bold text-sm tracking-wide transition-colors ${
-              currentStep === 0 && activeSection === "how-it-works"
-                ? "text-[#FE5A01]"
-                : "text-neutral-900 hover:text-neutral-700 font-semibold"
-            }`}
-          >
-            {currentStep === 0 && activeSection === "how-it-works" ? (
-              <>
-                <span className="mr-1.5">[</span>
-                <span>How It Works</span>
-                <span className="ml-1.5">]</span>
-              </>
-            ) : (
-              <span>How It Works</span>
-            )}
-          </a>
-          <a
-            href="#about"
-            onClick={(e) => {
-              e.preventDefault()
-              handleNavClick("about")
-            }}
-            className={`flex items-center font-bold text-sm tracking-wide transition-colors ${
-              currentStep === 0 && activeSection === "about"
-                ? "text-[#FE5A01]"
-                : "text-neutral-900 hover:text-neutral-700 font-semibold"
-            }`}
-          >
-            {currentStep === 0 && activeSection === "about" ? (
-              <>
-                <span className="mr-1.5">[</span>
-                <span>About</span>
-                <span className="ml-1.5">]</span>
-              </>
-            ) : (
-              <span>About</span>
-            )}
-          </a>
-          <a
-            href="#contact"
-            onClick={(e) => {
-              e.preventDefault()
-              handleNavClick("contact")
-            }}
-            className={`flex items-center font-bold text-sm tracking-wide transition-colors ${
-              currentStep === 0 && activeSection === "contact"
-                ? "text-[#FE5A01]"
-                : "text-neutral-900 hover:text-neutral-700 font-semibold"
-            }`}
-          >
-            {currentStep === 0 && activeSection === "contact" ? (
-              <>
-                <span className="mr-1.5">[</span>
-                <span>Contact</span>
-                <span className="ml-1.5">]</span>
-              </>
-            ) : (
-              <span>Contact</span>
-            )}
-          </a>
+          {[
+            { id: "home", label: "Home" },
+            { id: "features", label: "Features" },
+            { id: "how-it-works", label: "How It Works" },
+            { id: "about", label: "About" },
+            { id: "contact", label: "Contact" },
+          ].map(({ id, label }) => {
+            const isActive = currentStep === 0 && activeSection === id
+            return (
+              <a
+                key={id}
+                href={`#${id}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleNavClick(id as "home" | "features" | "how-it-works" | "about" | "contact")
+                }}
+                className={`relative py-1 font-bold text-sm tracking-wide transition-colors ${
+                  isActive
+                    ? "text-[#FE5A01]"
+                    : "text-neutral-700 hover:text-neutral-950 font-semibold"
+                }`}
+              >
+                <span>{label}</span>
+                {isActive && (
+                  <span className="absolute -bottom-1.5 left-0 right-0 h-[2.5px] bg-[#FE5A01] rounded-full animate-in fade-in duration-150" />
+                )}
+              </a>
+            )
+          })}
         </nav>
 
         {/* Right Action Buttons */}
@@ -226,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="text-xs font-semibold text-neutral-800">{scenarioName}</span>
                   <button
                     onClick={onScenarioToggle}
-                    className="text-xs font-semibold text-[#FE5A01] hover:text-[#d44800] underline ml-1 cursor-pointer"
+                    className="text-xs font-semibold text-[#c2410c] hover:text-[#9a3412] underline ml-1 cursor-pointer"
                   >
                     Switch
                   </button>
@@ -238,8 +171,8 @@ export const Header: React.FC<HeaderProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onReset}
-                className="text-xs h-9 px-3.5 text-neutral-700 border-neutral-300 hover:bg-neutral-100"
+                onClick={handleRequestReset}
+                className="text-xs h-9 px-3.5 text-neutral-700 border-neutral-300 hover:bg-neutral-100 rounded-lg cursor-pointer"
                 title="Start New Assessment"
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1" />
@@ -251,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onStart || onReset}
-                className="text-sm font-semibold text-white bg-[#FE5A01] hover:bg-[#e04f00] rounded-[4px] px-5 py-2 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                className="text-sm font-semibold text-white bg-[#FE5A01] hover:bg-[#e04f00] rounded-lg px-5 py-2 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
               >
                 Get Started <span className="text-base leading-none">→</span>
               </button>
@@ -314,9 +247,9 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false)
-                  onReset()
+                  handleRequestReset()
                 }}
-                className="w-full text-center py-2.5 text-sm font-semibold text-neutral-900 border border-neutral-300 rounded-[4px] bg-white"
+                className="w-full text-center py-2.5 text-sm font-semibold text-neutral-900 border border-neutral-300 rounded-lg bg-white"
               >
                 Start New Assessment (Reset)
               </button>
@@ -328,11 +261,42 @@ export const Header: React.FC<HeaderProps> = ({
                   if (onStart) onStart()
                   else onReset()
                 }}
-                className="w-full text-center py-2.5 text-sm font-semibold text-white bg-[#FE5A01] hover:bg-[#e04f00] rounded-[4px] shadow-xs"
+                className="w-full text-center py-2.5 text-sm font-semibold text-white bg-[#FE5A01] hover:bg-[#e04f00] rounded-lg shadow-xs"
               >
                 Get Started →
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 border border-neutral-200">
+            <h3 className="font-bold text-lg text-neutral-950 mb-2">
+              Start New Assessment?
+            </h3>
+            <p className="text-xs text-neutral-600 mb-6 leading-relaxed">
+              You are currently on Step {currentStep} of {totalSteps}. Starting over will clear your uploaded bill data and rooftop specifications.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowResetModal(false)}
+                className="text-xs rounded-lg"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleConfirmReset}
+                className="text-xs bg-[#FE5A01] hover:bg-[#e04f00] text-white rounded-lg shadow-xs"
+              >
+                Yes, Start Over
+              </Button>
+            </div>
           </div>
         </div>
       )}

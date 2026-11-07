@@ -88,8 +88,8 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
         >
           {/* Badge: Step 7 */}
           <div className="mb-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 shadow-2xs backdrop-blur-xs">
-              <Sparkles className="w-3.5 h-3.5 text-[#FE5A01]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 shadow-2xs backdrop-blur-xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#c2410c]" />
               <span>Step 7: Solar Viability Verdict</span>
             </div>
           </div>
@@ -110,7 +110,7 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
 
           <div className="flex items-center gap-2 mt-4 text-xs font-semibold text-neutral-600">
             <span>Assessment Confidence:</span>
-            <span className="px-2 py-0.5 rounded-[4px] bg-white border border-neutral-300 font-mono text-[#FE5A01] font-bold">
+            <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-300 font-mono text-[#c2410c] font-bold">
               {decision.confidenceScore}% High Confidence
             </span>
           </div>
@@ -132,7 +132,7 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
                     : AlertTriangle
                 const colorClass =
                   factor.impact === "positive"
-                    ? "text-[#FE5A01] bg-orange-50/50 border-orange-200"
+                    ? "text-[#c2410c] bg-orange-50/50 border-orange-200"
                     : factor.impact === "negative"
                     ? "text-rose-700 bg-rose-50/50 border-rose-200"
                     : "text-amber-700 bg-amber-50/50 border-amber-200"

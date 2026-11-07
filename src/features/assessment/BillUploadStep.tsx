@@ -282,8 +282,8 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
         <CardHeader className="text-center pb-2">
           {/* Badge: Step 1 */}
           <div className="flex justify-center mb-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 shadow-2xs backdrop-blur-xs">
-              <Zap className="w-3.5 h-3.5 text-[#FE5A01] fill-[#FE5A01]/20" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-neutral-300 bg-white/95 text-xs font-semibold text-neutral-900 shadow-2xs backdrop-blur-xs">
+              <Zap className="w-3.5 h-3.5 text-[#c2410c] fill-[#c2410c]/20" />
               <span>Step 1: Bill Upload</span>
             </div>
           </div>
@@ -303,7 +303,7 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
                 setMode("upload")
                 setErrorMessage(null)
               }}
-              className={`text-xs font-semibold px-4 py-1.5 rounded-[4px] transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`text-xs font-semibold px-4 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                 mode === "upload"
                   ? "bg-[#FE5A01] text-white shadow-2xs"
                   : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
@@ -317,7 +317,7 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
                 setMode("paste")
                 setErrorMessage(null)
               }}
-              className={`text-xs font-semibold px-4 py-1.5 rounded-[4px] transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`text-xs font-semibold px-4 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                 mode === "paste"
                   ? "bg-[#FE5A01] text-white shadow-2xs"
                   : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
@@ -417,7 +417,7 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
                         </p>
                       </div>
                     </div>
-                    <span className="flex items-center gap-1 text-xs font-semibold text-[#FE5A01] bg-orange-100/70 px-2.5 py-1 rounded-[4px] border border-orange-200">
+                    <span className="flex items-center gap-1 text-xs font-semibold text-[#c2410c] bg-orange-100/70 px-2.5 py-1 rounded-md border border-orange-200">
                       <CheckCircle2 className="h-3.5 w-3.5" /> File Loaded
                     </span>
                   </div>
@@ -425,7 +425,7 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
                   {/* Extracted Preview Badge (if PDF had digital text) */}
                   {extractedPreview && (
                     <div className="p-2.5 rounded-md bg-orange-50/90 border border-orange-200 text-xs text-orange-950 flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-semibold flex items-center gap-1 text-[#FE5A01]">
+                      <span className="font-semibold flex items-center gap-1 text-[#c2410c]">
                         <Zap className="h-3.5 w-3.5" /> Extracted from Document:
                       </span>
                       <div className="flex items-center gap-3 font-mono font-medium">

@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { Info } from "lucide-react"
 import { Header } from "./components/layout/Header"
 import { Footer } from "./components/layout/Footer"
 import { Progress } from "./components/ui/Progress"
@@ -10,7 +11,11 @@ import { LocationRoofStep } from "./features/assessment/LocationRoofStep"
 import { SolarRecommendationStep } from "./features/assessment/SolarRecommendationStep"
 import { FinancialTwinStep } from "./features/assessment/FinancialTwinStep"
 import { DecisionSummaryStep } from "./features/assessment/DecisionSummaryStep"
-import { ConversationalAssessment } from "./features/conversation/ConversationalAssessment"
+import {
+  ConversationalAssessment,
+  stepToStage,
+  stageToStep,
+} from "./features/conversation/ConversationalAssessment"
 import {
   defaultAttractiveAssessment,
   lowConsumptionNotRecommendedAssessment,
@@ -32,11 +37,23 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
   const [assessmentMode, setAssessmentMode] = useState<"conversational" | "stepper">(
     initialMode || (isVitest ? "stepper" : "conversational")
   )
+  const [showModeInfo, setShowModeInfo] = useState(false)
   const [scenario, setScenario] = useState<"attractive" | "not-recommended">("attractive")
   const [assessment, setAssessment] = useState<AssessmentState>(defaultAttractiveAssessment)
   const [currentStep, setCurrentStep] = useState<number>(0)
   const [activeSection, setActiveSection] = useState<"home" | "features" | "how-it-works" | "about" | "contact">("home")
   const totalSteps = 7
+
+  const handleSwitchMode = (mode: "conversational" | "stepper") => {
+    if (mode === assessmentMode) return
+    const scrollPos = typeof window !== "undefined" ? window.scrollY : 0
+    setAssessmentMode(mode)
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: scrollPos, behavior: "instant" })
+      })
+    }
+  }
 
   const handleSelectScenario = (selected: "attractive" | "not-recommended") => {
     setScenario(selected)
@@ -174,57 +191,99 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
         <div className="bg-[#fafbfc]/90 backdrop-blur-md border-b border-neutral-200/60 sticky top-20 z-40 py-2.5">
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              {/* Experience Mode Toggle */}
-              <div
-                role="group"
-                aria-label="Assessment Mode Selection"
-                className="inline-flex items-center p-1 rounded-full bg-neutral-200/80 border border-neutral-300/90 shadow-2xs max-w-full overflow-x-auto"
-              >
-                <button
-                  type="button"
-                  onClick={() => setAssessmentMode("conversational")}
-                  aria-label="Conversational Consultant - Normal Q&A"
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                    assessmentMode === "conversational"
-                      ? "bg-white text-[#FE5A01] shadow-xs font-bold"
-                      : "text-neutral-600 hover:text-neutral-900"
-                  }`}
+              {/* Experience Mode Toggle & Info Tooltip */}
+              <div className="flex items-center gap-2">
+                <div
+                  role="group"
+                  aria-label="Assessment Mode Selection"
+                  className="inline-flex items-center p-1 rounded-full bg-neutral-200/80 border border-neutral-300/90 shadow-2xs max-w-full"
                 >
-                  <span className="sr-only">Conversational Consultant</span>
-                  <span>Normal Q&amp;A</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAssessmentMode("stepper")}
-                  aria-label="Technical Stepper View - Technical (You will need basic technical knowledge to understand it)"
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                    assessmentMode === "stepper"
-                      ? "bg-white text-[#FE5A01] shadow-xs font-bold"
-                      : "text-neutral-600 hover:text-neutral-900"
-                  }`}
-                >
-                  <span className="sr-only">Technical Stepper View</span>
-                  <span>
-                    Technical{" "}
-                    <span className="text-[11px] font-normal opacity-85">
-                      (You will need basic technical knowledge to understand it)
-                    </span>
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchMode("conversational")}
+                    aria-label="Guided View - Conversational Consultant (Simple, conversational, stepwise)"
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                      assessmentMode === "conversational"
+                        ? "bg-white text-[#c2410c] shadow-xs font-bold"
+                        : "text-neutral-600 hover:text-neutral-900"
+                    }`}
+                  >
+                    <span className="sr-only">Conversational Consultant</span>
+                    <span>Guided View</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchMode("stepper")}
+                    aria-label="Detailed View - Technical Stepper View (Comprehensive, data-rich, all-metrics)"
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                      assessmentMode === "stepper"
+                        ? "bg-white text-[#c2410c] shadow-xs font-bold"
+                        : "text-neutral-600 hover:text-neutral-900"
+                    }`}
+                  >
+                    <span className="sr-only">Technical Stepper View</span>
+                    <span>Detailed View</span>
+                  </button>
+                </div>
+
+                {/* Info Tooltip Popover */}
+                <div className="relative inline-block">
+                  <button
+                    type="button"
+                    onClick={() => setShowModeInfo((prev) => !prev)}
+                    onMouseEnter={() => setShowModeInfo(true)}
+                    onMouseLeave={() => setShowModeInfo(false)}
+                    aria-label="Information about assessment view modes"
+                    aria-expanded={showModeInfo}
+                    aria-haspopup="true"
+                    className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900 border border-neutral-300 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-[#FE5A01]/30 cursor-pointer"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                  </button>
+
+                  {showModeInfo && (
+                    <div
+                      role="tooltip"
+                      className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-72 p-3 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 text-xs text-neutral-700 space-y-2 pointer-events-none"
+                    >
+                      <div className="font-semibold text-neutral-900 border-b border-neutral-100 pb-1 flex items-center gap-1.5">
+                        <Info className="w-3.5 h-3.5 text-[#c2410c]" />
+                        <span>Assessment View Modes</span>
+                      </div>
+                      <div>
+                        <span className="font-bold text-[#c2410c]">Guided View:</span>
+                        <span className="text-[11px] text-neutral-500 font-normal ml-1">(Simple, conversational, stepwise)</span>
+                        <p className="text-[11px] text-neutral-600 mt-0.5 leading-relaxed">
+                          Conversational walkthrough designed for homeowners seeking straightforward recommendations and plain-language guidance.
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-bold text-neutral-800">Detailed View:</span>
+                        <span className="text-[11px] text-neutral-500 font-normal ml-1">(Comprehensive, data-rich, all-metrics)</span>
+                        <p className="text-[11px] text-neutral-600 mt-0.5 leading-relaxed">
+                          Multi-step engineering flow with in-depth solar calculations, granular tariffs, and full financial twin metrics.
+                        </p>
+                      </div>
+                      <div className="pt-1 text-[10px] text-neutral-600 italic border-t border-neutral-100">
+                        You can switch between views anytime without losing your inputs.
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Progress metrics when in stepper mode */}
               {assessmentMode === "stepper" && (
                 <div className="flex items-center gap-3 text-xs font-semibold">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-orange-50 border border-orange-200/90 text-[#FE5A01] text-[11px] font-bold">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#c2410c] text-[11px] font-bold">
                       Step {currentStep} of {totalSteps}
                     </span>
                     <span className="text-neutral-900 font-bold text-sm tracking-tight hidden sm:inline">
                       {stepLabels[currentStep]}
                     </span>
                   </div>
-                  <span className="font-mono text-xs font-bold text-[#FE5A01]">{progressPercentage}% Complete</span>
+                  <span className="font-mono text-xs font-bold text-[#c2410c]">{progressPercentage}% Complete</span>
                 </div>
               )}
             </div>
@@ -260,10 +319,13 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
         {currentStep > 0 && assessmentMode === "conversational" && (
           <ConversationalAssessment
             initialAssessment={assessment}
+            currentStage={stepToStage(currentStep)}
             scenario={scenario}
             onRestart={handleReset}
             onScenarioToggle={handleToggleScenario}
-            onSwitchToStepper={() => setAssessmentMode("stepper")}
+            onAssessmentChange={(updated) => setAssessment(updated)}
+            onStageChange={(newStage) => setCurrentStep(stageToStep(newStage))}
+            onSwitchToStepper={() => handleSwitchMode("stepper")}
           />
         )}
 
@@ -281,6 +343,9 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
               <BillConfirmStep
                 initialBill={assessment.bill}
                 onConfirm={handleBillConfirm}
+                onChange={(updatedBill) =>
+                  setAssessment((prev) => ({ ...prev, bill: updatedBill }))
+                }
                 onBack={() => setCurrentStep(1)}
               />
             )}
@@ -290,6 +355,9 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
                 initialUsage={assessment.usage}
                 providerName={assessment.bill.provider}
                 onConfirm={handleUsageConfirm}
+                onChange={(updatedUsage) =>
+                  setAssessment((prev) => ({ ...prev, usage: updatedUsage }))
+                }
                 onBack={() => setCurrentStep(2)}
               />
             )}
@@ -298,6 +366,9 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
               <LocationRoofStep
                 initialLocationRoof={assessment.locationRoof}
                 onConfirm={handleLocationRoofConfirm}
+                onChange={(updatedRoof) =>
+                  setAssessment((prev) => ({ ...prev, locationRoof: updatedRoof }))
+                }
                 onBack={() => setCurrentStep(3)}
               />
             )}

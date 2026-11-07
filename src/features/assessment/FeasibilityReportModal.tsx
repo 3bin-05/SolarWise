@@ -193,7 +193,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition min-w-[40px] min-h-[40px] flex items-center justify-center cursor-pointer"
               aria-label="Close"
             >
               <X className="h-5 w-5" />
@@ -224,7 +224,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                       isRecommended
-                        ? "bg-orange-100 text-[#FE5A01] border border-orange-200"
+                        ? "bg-orange-100 text-[#c2410c] border border-orange-200"
                         : "bg-rose-200 text-rose-900"
                     }`}
                   >
@@ -258,7 +258,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                     Simple Payback
                   </span>
-                  <span className="text-xl font-extrabold text-[#FE5A01] block mt-1">
+                  <span className="text-xl font-extrabold text-[#c2410c] block mt-1">
                     {report.financial.simple_payback_years} Yrs
                   </span>
                   <span className="text-[11px] text-slate-500">
@@ -273,7 +273,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span className="text-xl font-extrabold text-slate-900 block mt-1">
                     ₹{report.financial.net_initial_investment_inr.toLocaleString()}
                   </span>
-                  <span className="text-[11px] text-[#FE5A01] font-semibold">
+                  <span className="text-[11px] text-[#c2410c] font-semibold">
                     Incl. ₹{report.financial.pm_surya_ghar_subsidy_inr.toLocaleString()} CFA
                   </span>
                 </div>
@@ -282,7 +282,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                     25-Yr Net Savings
                   </span>
-                  <span className="text-xl font-extrabold text-[#FE5A01] block mt-1">
+                  <span className="text-xl font-extrabold text-[#c2410c] block mt-1">
                     ₹{report.financial.twenty_five_year_net_savings_inr.toLocaleString()}
                   </span>
                   <span className="text-[11px] text-slate-500">
@@ -297,7 +297,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   onClick={() => setActiveTab("overview")}
                   className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "overview"
-                      ? "border-[#FE5A01] text-[#FE5A01]"
+                      ? "border-[#FE5A01] text-[#c2410c]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
@@ -307,7 +307,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   onClick={() => setActiveTab("technical")}
                   className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "technical"
-                      ? "border-[#FE5A01] text-[#FE5A01]"
+                      ? "border-[#FE5A01] text-[#c2410c]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
@@ -317,7 +317,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   onClick={() => setActiveTab("financial")}
                   className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "financial"
-                      ? "border-[#FE5A01] text-[#FE5A01]"
+                      ? "border-[#FE5A01] text-[#c2410c]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
@@ -327,7 +327,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                   onClick={() => setActiveTab("providers")}
                   className={`pb-2.5 transition border-b-2 cursor-pointer ${
                     activeTab === "providers"
-                      ? "border-[#FE5A01] text-[#FE5A01]"
+                      ? "border-[#FE5A01] text-[#c2410c]"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >

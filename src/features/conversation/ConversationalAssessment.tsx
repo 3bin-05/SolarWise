@@ -39,10 +39,13 @@ import { RoofPlannerModal } from "../assessment/RoofPlannerModal"
 
 export interface ConversationalAssessmentProps {
   initialAssessment?: AssessmentState
+  currentStage?: ConversationStage
   scenario?: "attractive" | "not-recommended"
   onRestart: () => void
   onScenarioToggle?: () => void
   onSwitchToStepper?: () => void
+  onAssessmentChange?: (updated: AssessmentState) => void
+  onStageChange?: (stage: ConversationStage) => void
 }
 
 export type ConversationStage =
@@ -54,15 +57,59 @@ export type ConversationStage =
   | "budget_goals"
   | "recommendation"
 
+// Bi-directional synchronization mappings
+export const stageToStep = (stage: ConversationStage): number => {
+  switch (stage) {
+    case "bill_input":
+      return 1
+    case "bill_confirm":
+      return 2
+    case "surya_ghar":
+    case "usage":
+      return 3
+    case "property":
+      return 4
+    case "budget_goals":
+      return 5
+    case "recommendation":
+      return 7
+    default:
+      return 1
+  }
+}
+
+export const stepToStage = (step: number): ConversationStage => {
+  switch (step) {
+    case 1:
+      return "bill_input"
+    case 2:
+      return "bill_confirm"
+    case 3:
+      return "usage"
+    case 4:
+      return "property"
+    case 5:
+      return "budget_goals"
+    case 6:
+    case 7:
+      return "recommendation"
+    default:
+      return "bill_input"
+  }
+}
+
 export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> = ({
   initialAssessment,
+  currentStage,
   scenario = "attractive",
   onRestart,
   onScenarioToggle,
   onSwitchToStepper,
+  onAssessmentChange,
+  onStageChange,
 }) => {
   // Main assessment state
-  const [assessment, setAssessment] = useState<AssessmentState>(() => {
+  const [internalAssessment, setInternalAssessment] = useState<AssessmentState>(() => {
     if (initialAssessment) return initialAssessment
     return {
       currentStep: 1,
@@ -146,15 +193,42 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
     }
   })
 
-  // Synchronize initial assessment if changed externally (e.g., scenario toggle)
+  // Synchronize initial assessment if changed externally (e.g., scenario toggle or Detailed View edit)
   useEffect(() => {
     if (initialAssessment) {
-      setAssessment(initialAssessment)
+      setInternalAssessment(initialAssessment)
     }
   }, [initialAssessment])
 
   // Active conversational stage
-  const [stage, setStage] = useState<ConversationStage>("bill_input")
+  const [internalStage, setInternalStage] = useState<ConversationStage>(currentStage || "bill_input")
+
+  // Synchronize stage if changed externally (e.g. when switching from Detailed View)
+  useEffect(() => {
+    if (currentStage) {
+      setInternalStage(currentStage)
+    }
+  }, [currentStage])
+
+  const assessment = internalAssessment
+  const stage = internalStage
+
+  const setStage = (newStage: ConversationStage) => {
+    setInternalStage(newStage)
+    queueMicrotask(() => {
+      onStageChange?.(newStage)
+    })
+  }
+
+  const setAssessment: React.Dispatch<React.SetStateAction<AssessmentState>> = (value) => {
+    setInternalAssessment((prev) => {
+      const next = typeof value === "function" ? (value as (prev: AssessmentState) => AssessmentState)(prev) : value
+      queueMicrotask(() => {
+        onAssessmentChange?.(next)
+      })
+      return next
+    })
+  }
 
   // Modals state
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
@@ -461,9 +535,9 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
                 type="button"
                 onClick={onSwitchToStepper}
                 className="text-xs font-medium text-neutral-500 hover:text-[#FE5A01] inline-flex items-center gap-1 cursor-pointer transition-colors"
-                title="Switch to detailed technical step-by-step view"
+                title="Switch to detailed view"
               >
-                <Sliders className="w-3.5 h-3.5" /> Stepper View
+                <Sliders className="w-3.5 h-3.5" /> Detailed View
               </button>
             )}
             <span className="font-mono text-xs font-extrabold text-[#FE5A01]">
@@ -492,12 +566,12 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
       {currentStageIndex > 0 && (
         <div className="mb-6 bg-neutral-50/80 rounded-xl p-4 border border-neutral-200/70 transition-all">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-600">
               Your Consultation Record
             </span>
             <button
               onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-              className="text-xs font-medium text-[#FE5A01] hover:underline inline-flex items-center gap-1 cursor-pointer"
+              className="text-xs font-semibold text-[#c2410c] hover:underline inline-flex items-center gap-1 cursor-pointer py-1 px-1.5 rounded"
             >
               {isHistoryExpanded ? (
                 <>
@@ -514,75 +588,75 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
           {isHistoryExpanded && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {/* Bill Summary Item */}
-              <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-neutral-200/60">
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-neutral-200/60">
                 <div className="truncate pr-2">
-                  <span className="text-neutral-400 block text-[10px]">ELECTRICITY BILL</span>
+                  <span className="text-neutral-500 block text-[10px] font-semibold">ELECTRICITY BILL</span>
                   <span className="font-semibold text-neutral-800">
                     {assessment.bill.units} kWh • ₹{assessment.bill.totalBill.toLocaleString()}
                   </span>
                 </div>
                 <button
                   onClick={() => setStage("bill_confirm")}
-                  className="p-1 hover:bg-neutral-100 rounded text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 rounded-lg text-neutral-500 hover:text-neutral-800 cursor-pointer transition-colors"
                   title="Modify bill data"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
+                  <Edit3 className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Surya Ghar Item */}
               {currentStageIndex > 1 && (
-                <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-neutral-200/60">
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-neutral-200/60">
                   <div className="truncate pr-2">
-                    <span className="text-neutral-400 block text-[10px]">PM SURYA GHAR</span>
+                    <span className="text-neutral-500 block text-[10px] font-semibold">PM SURYA GHAR</span>
                     <span className="font-semibold text-neutral-800">
                       {isResidential === "yes" ? "Domestic Residential (Eligible)" : "General Grid Connection"}
                     </span>
                   </div>
                   <button
                     onClick={() => setStage("surya_ghar")}
-                    className="p-1 hover:bg-neutral-100 rounded text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 rounded-lg text-neutral-500 hover:text-neutral-800 cursor-pointer transition-colors"
                     title="Change scheme answers"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
+                    <Edit3 className="w-4 h-4" />
                   </button>
                 </div>
               )}
 
               {/* Usage Item */}
               {currentStageIndex > 2 && (
-                <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-neutral-200/60">
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-neutral-200/60">
                   <div className="truncate pr-2">
-                    <span className="text-neutral-400 block text-[10px]">HOUSEHOLD USAGE</span>
+                    <span className="text-neutral-500 block text-[10px] font-semibold">HOUSEHOLD USAGE</span>
                     <span className="font-semibold text-neutral-800">
                       {usageTiming === "day" ? "Daytime Heavy (60%)" : usageTiming === "night" ? "Night Heavy (25%)" : "Balanced (50%)"} • {outageLevel} outages
                     </span>
                   </div>
                   <button
                     onClick={() => setStage("usage")}
-                    className="p-1 hover:bg-neutral-100 rounded text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 rounded-lg text-neutral-500 hover:text-neutral-800 cursor-pointer transition-colors"
                     title="Change usage answers"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
+                    <Edit3 className="w-4 h-4" />
                   </button>
                 </div>
               )}
 
               {/* Property Item */}
               {currentStageIndex > 3 && (
-                <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-neutral-200/60">
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-neutral-200/60">
                   <div className="truncate pr-2">
-                    <span className="text-neutral-400 block text-[10px]">PROPERTY & ROOF</span>
+                    <span className="text-neutral-500 block text-[10px] font-semibold">PROPERTY & ROOF</span>
                     <span className="font-semibold text-neutral-800">
                       {assessment.locationRoof.city} • {assessment.locationRoof.approxAreaSqFt} sq ft {assessment.locationRoof.roofType}
                     </span>
                   </div>
                   <button
                     onClick={() => setStage("property")}
-                    className="p-1 hover:bg-neutral-100 rounded text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 rounded-lg text-neutral-500 hover:text-neutral-800 cursor-pointer transition-colors"
                     title="Change property answers"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
+                    <Edit3 className="w-4 h-4" />
                   </button>
                 </div>
               )}
@@ -599,7 +673,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
         {stage === "bill_input" && (
           <div className="space-y-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#FE5A01] mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#c2410c] mb-3">
                 <Sun className="w-3.5 h-3.5" />
                 <span>Question 1 • Understanding Your Electricity Bill</span>
               </div>
@@ -733,7 +807,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
               <>
                 {/* Manual Entry Window */}
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#FE5A01] mb-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#c2410c] mb-3">
                     <PenLine className="w-3.5 h-3.5" />
                     <span>Manual Entry • Household Electricity Consumption</span>
                   </div>
@@ -910,7 +984,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
               <>
                 {/* Extracted Bill Review Screen */}
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#FE5A01] mb-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#c2410c] mb-3">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#FE5A01]" />
                     <span>Bill Review • Confirming Consumption</span>
                   </div>
@@ -1066,7 +1140,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
         {stage === "surya_ghar" && (
           <div className="space-y-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#FE5A01] mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#c2410c] mb-3">
                 <Shield className="w-3.5 h-3.5" />
                 <span>Question 2 • Government Subsidies & Consumer Protection</span>
               </div>
@@ -1237,7 +1311,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
         {stage === "usage" && (
           <div className="space-y-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#FE5A01] mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#c2410c] mb-3">
                 <Zap className="w-3.5 h-3.5" />
                 <span>Question 3 • Daily Consumption Patterns</span>
               </div>
@@ -1428,7 +1502,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
         {stage === "property" && (
           <div className="space-y-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#FE5A01] mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#c2410c] mb-3">
                 <Home className="w-3.5 h-3.5" />
                 <span>Question 4 • Rooftop Conditions & Solar Access</span>
               </div>
@@ -1624,7 +1698,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
         {stage === "budget_goals" && (
           <div className="space-y-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#FE5A01] mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-orange-200 bg-orange-50/80 text-xs font-semibold text-[#c2410c] mb-3">
                 <DollarSign className="w-3.5 h-3.5" />
                 <span>Question 5 • Investment Budget & Priorities</span>
               </div>
@@ -1865,35 +1939,35 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
             {/* Restrained Inline Metric Highlights */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">Recommended Size</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Recommended Size</span>
                 <span className="text-lg font-extrabold text-neutral-950">{assessment.recommendation.recommendedCapacityKw} kWp</span>
               </div>
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">Annual Generation</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual Generation</span>
                 <span className="text-lg font-extrabold text-neutral-950">{assessment.recommendation.annualGenerationKwh.toLocaleString()} kWh</span>
               </div>
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">PM Surya Ghar Subsidy</span>
-                <span className="text-lg font-extrabold text-[#FE5A01]">₹{assessment.financial.subsidyAmount.toLocaleString()}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">PM Surya Ghar Subsidy</span>
+                <span className="text-lg font-extrabold text-[#c2410c]">₹{assessment.financial.subsidyAmount.toLocaleString()}</span>
               </div>
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">Net Investment</span>
-                <span className="text-lg font-extrabold text-neutral-950">₹{assessment.financial.netInitialInvestment.toLocaleString()}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Net Investment</span>
+                <span className="text-lg font-extrabold text-neutral-950">{assessment.financial.netInitialInvestment > 0 ? `₹${assessment.financial.netInitialInvestment.toLocaleString()}` : "₹0"}</span>
               </div>
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">Annual Benefit</span>
-                <span className="text-lg font-extrabold text-[#FE5A01]">₹{assessment.financial.annualSavings.toLocaleString()}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual Benefit</span>
+                <span className="text-lg font-extrabold text-[#c2410c]">₹{assessment.financial.annualSavings.toLocaleString()}</span>
               </div>
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">Simple Payback</span>
-                <span className="text-lg font-extrabold text-[#FE5A01]">{assessment.financial.simplePaybackYears} yrs</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Simple Payback</span>
+                <span className="text-lg font-extrabold text-[#c2410c]">{assessment.financial.simplePaybackYears} yrs</span>
               </div>
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">25-Yr Net Savings</span>
-                <span className="text-lg font-extrabold text-[#FE5A01]">₹{assessment.financial.twentyFiveYearNetSavings.toLocaleString()}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">25-Yr Net Savings</span>
+                <span className="text-lg font-extrabold text-[#c2410c]">₹{assessment.financial.twentyFiveYearNetSavings.toLocaleString()}</span>
               </div>
               <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">Carbon Avoidance</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Carbon Avoidance</span>
                 <span className="text-lg font-extrabold text-neutral-950">
                   {((assessment.recommendation.annualGenerationKwh * 0.82) / 1000).toFixed(1)} t/yr
                 </span>

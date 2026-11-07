@@ -136,7 +136,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ onStart }) => {
                 { label: "Features", id: "features" },
                 { label: "How It Works", id: "how-it-works" },
                 { label: "About Us", id: "about" },
-                { label: "FAQs", id: "how-it-works" },
+                { label: "FAQs", id: "faq" },
               ].map((item) => (
                 <li key={item.label} className="w-full">
                   <a
