@@ -1703,7 +1703,7 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
                 <span>Question 5 • Investment Budget & Priorities</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight leading-snug">
-                Recommended System Sizing & Equipment
+                What are your budget & energy independence goals?
               </h2>
             </div>
 
@@ -1936,41 +1936,61 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
               </div>
             )}
 
-            {/* Restrained Inline Metric Highlights */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Recommended Size</span>
-                <span className="text-lg font-extrabold text-neutral-950">{assessment.recommendation.recommendedCapacityKw} kWp</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual Generation</span>
-                <span className="text-lg font-extrabold text-neutral-950">{assessment.recommendation.annualGenerationKwh.toLocaleString()} kWh</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">PM Surya Ghar Subsidy</span>
-                <span className="text-lg font-extrabold text-[#c2410c]">₹{assessment.financial.subsidyAmount.toLocaleString()}</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Net Investment</span>
-                <span className="text-lg font-extrabold text-neutral-950">{assessment.financial.netInitialInvestment > 0 ? `₹${assessment.financial.netInitialInvestment.toLocaleString()}` : "₹0"}</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual Benefit</span>
-                <span className="text-lg font-extrabold text-[#c2410c]">₹{assessment.financial.annualSavings.toLocaleString()}</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Simple Payback</span>
-                <span className="text-lg font-extrabold text-[#c2410c]">{assessment.financial.simplePaybackYears} yrs</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">25-Yr Net Savings</span>
-                <span className="text-lg font-extrabold text-[#c2410c]">₹{assessment.financial.twentyFiveYearNetSavings.toLocaleString()}</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Carbon Avoidance</span>
-                <span className="text-lg font-extrabold text-neutral-950">
-                  {((assessment.recommendation.annualGenerationKwh * 0.82) / 1000).toFixed(1)} t/yr
+            {/* Two-Tier Metric Presentation: Executive Highlights vs Environmental & Lifetime Metrics */}
+            <div className="space-y-4">
+              {/* Primary 3-Metric Executive Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-orange-50/70 via-white to-amber-50/40 border border-orange-200/90 shadow-2xs">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#c2410c] block mb-3">
+                  Key Investment Highlights
                 </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                  <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Recommended Size</span>
+                    <span className="text-xl font-extrabold text-neutral-950">{assessment.recommendation.recommendedCapacityKw} kWp</span>
+                    <span className="text-[11px] text-neutral-500 block mt-0.5">{assessment.recommendation.panelCount} × {assessment.recommendation.panelWattage}W panels</span>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual Benefit</span>
+                    <span className="text-xl font-extrabold text-[#c2410c]">₹{assessment.financial.annualSavings.toLocaleString()}</span>
+                    <span className="text-[11px] text-neutral-500 block mt-0.5">Direct retail bill savings</span>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-white border border-neutral-200/80 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Simple Payback</span>
+                    <span className="text-xl font-extrabold text-[#c2410c]">{assessment.financial.simplePaybackYears} yrs</span>
+                    <span className="text-[11px] text-neutral-500 block mt-0.5">25-year panel warranty</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Secondary Detailed Metrics Grid */}
+              <div className="p-4 rounded-xl bg-neutral-50/70 border border-neutral-200/80 space-y-2.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-600 block">
+                  Subsidy, Cash Flow & Carbon Offsets
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                  <div className="p-3 rounded-lg bg-white border border-neutral-200/80">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual Generation</span>
+                    <span className="text-base font-extrabold text-neutral-950">{assessment.recommendation.annualGenerationKwh.toLocaleString()} kWh</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white border border-neutral-200/80">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">PM Surya Ghar Subsidy</span>
+                    <span className="text-base font-extrabold text-[#c2410c]">₹{assessment.financial.subsidyAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white border border-neutral-200/80">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Net Investment</span>
+                    <span className="text-base font-extrabold text-neutral-950">{assessment.financial.netInitialInvestment > 0 ? `₹${assessment.financial.netInitialInvestment.toLocaleString()}` : "₹0"}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white border border-neutral-200/80">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">25-Yr Net Savings</span>
+                    <span className="text-base font-extrabold text-[#c2410c]">₹{assessment.financial.twentyFiveYearNetSavings.toLocaleString()}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white border border-neutral-200/80 col-span-2 sm:col-span-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Carbon Avoidance</span>
+                    <span className="text-base font-extrabold text-neutral-950">
+                      {((assessment.recommendation.annualGenerationKwh * 0.82) / 1000).toFixed(1)} t/yr
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2013,22 +2033,29 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
                 </Button>
 
                 <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-end">
+                  {/* Exploratory Twin Tools (Identical UI & Enhanced UX) */}
                   <Button
                     variant="outline"
                     size="md"
                     onClick={() => setIsScenarioModalOpen(true)}
-                    className="whitespace-nowrap flex-1 sm:flex-initial cursor-pointer hover:border-[#FE5A01] hover:text-[#FE5A01]"
+                    title="Simulate rate inflation, panel degradation, battery storage, and 25-yr financial sensitivity"
+                    aria-label="Open What-If Scenario Simulator"
+                    className="whitespace-nowrap flex-1 sm:flex-initial cursor-pointer gap-2 border-orange-200/90 bg-white hover:border-[#FE5A01] hover:bg-orange-50/60 text-neutral-800 hover:text-[#c2410c] font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all active:scale-[0.98] group"
                   >
-                    <Sliders className="w-4 h-4 mr-1.5" /> What-If Simulator
+                    <Sliders className="w-4 h-4 mr-1 text-[#FE5A01] shrink-0 group-hover:scale-110 transition-transform duration-200" />
+                    <span>What-If Simulator</span>
                   </Button>
 
                   <Button
                     variant="outline"
                     size="md"
                     onClick={() => setIsProviderModalOpen(true)}
-                    className="whitespace-nowrap flex-1 sm:flex-initial cursor-pointer hover:border-[#FE5A01] hover:text-[#FE5A01]"
+                    title="Browse verified local solar EPC installers, DISCOM net metering rules, and PM Surya Ghar subsidies"
+                    aria-label="Open Installers & Subsidies directory"
+                    className="whitespace-nowrap flex-1 sm:flex-initial cursor-pointer gap-2 border-orange-200/90 bg-white hover:border-[#FE5A01] hover:bg-orange-50/60 text-neutral-800 hover:text-[#c2410c] font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all active:scale-[0.98] group"
                   >
-                    <Users className="w-4 h-4 mr-1.5" /> Installers & Subsidies
+                    <Users className="w-4 h-4 mr-1 text-[#FE5A01] shrink-0 group-hover:scale-110 transition-transform duration-200" />
+                    <span>Installers & Subsidies</span>
                   </Button>
 
                   <Button

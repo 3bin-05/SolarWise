@@ -9,6 +9,7 @@ import {
   Sparkles,
   ClipboardList,
   Zap,
+  Loader2,
 } from "lucide-react"
 import { Button } from "../../components/ui/Button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/Card"
@@ -37,6 +38,7 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
   const [selectedPresetName, setSelectedPresetName] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isOcrLoading, setIsOcrLoading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [extractedPreview, setExtractedPreview] = useState<BillData | null>(null)
 
@@ -128,6 +130,7 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
+    setIsDragging(false)
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       processFileClientSide(e.dataTransfer.files[0])
     }
@@ -135,6 +138,12 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
   }
 
   const handlePasteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -354,10 +363,24 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
 
               {/* Dropzone Container */}
               <div
+                role="button"
+                tabIndex={0}
+                aria-label="Upload electricity bill PDF or image"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    fileInputRef.current?.click()
+                  }
+                }}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-orange-300/80 bg-orange-50/20 hover:bg-orange-50/40 rounded-xl p-7 text-center cursor-pointer transition-colors"
+                className={`border-2 border-dashed ${
+                  isDragging
+                    ? "border-[#FE5A01] bg-orange-100/60 scale-[1.01]"
+                    : "border-orange-300/80 bg-orange-50/20 hover:bg-orange-50/40"
+                } rounded-xl p-7 text-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-[#FE5A01] focus:ring-offset-2`}
               >
                 <div className="h-11 w-11 rounded-full bg-orange-100 text-[#FE5A01] flex items-center justify-center mx-auto mb-2.5">
                   <UploadCloud className="h-5 w-5" />
@@ -403,6 +426,27 @@ export const BillUploadStep: React.FC<BillUploadStepProps> = ({
                   </a>
                 </div>
               </div>
+
+              {/* Step-by-Step OCR Progress Micro-Stepper */}
+              {isOcrLoading && (
+                <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/80 space-y-2.5 animate-in fade-in">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#c2410c]">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#FE5A01]" />
+                    Reading your electricity bill with OCR...
+                  </div>
+                  <div className="space-y-1.5 text-xs text-neutral-700 pl-1">
+                    <div className="flex items-center gap-2 text-neutral-800">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#FE5A01]" /> Document rendered & pre-processed
+                    </div>
+                    <div className="flex items-center gap-2 text-neutral-800">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#FE5A01]" /> Detecting DISCOM template & consumer profile
+                    </div>
+                    <div className="flex items-center gap-2 font-medium text-[#c2410c]">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Extracting 12-month kWh units & tariff slabs...
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Selected File Details */}
               {selectedFile && (

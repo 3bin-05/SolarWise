@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
+import { useFocusTrap } from "../../hooks/useFocusTrap"
 import {
   X,
   Printer,
@@ -12,6 +13,7 @@ import {
   ShieldCheck,
   Building,
   Award,
+  Leaf,
 } from "lucide-react"
 import {
   api,
@@ -20,7 +22,6 @@ import {
 } from "../../services/api"
 import { AssessmentState } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
-import { Card } from "../../components/ui/Card"
 
 interface FeasibilityReportModalProps {
   isOpen: boolean
@@ -39,6 +40,8 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saveStatus, setSaveStatus] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(modalRef, isOpen, onClose)
 
   useEffect(() => {
     if (!isOpen) return
@@ -145,8 +148,20 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
     report?.summary.verdict_outcome === "Strongly attractive"
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
-      <Card className="w-full max-w-4xl bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="report-modal-title"
+        tabIndex={-1}
+        className="w-full max-w-4xl bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
@@ -154,7 +169,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">
+              <h2 id="report-modal-title" className="text-lg font-bold text-slate-900 leading-tight">
                 Solar Feasibility & Engineering Docket
               </h2>
               <div className="flex items-center gap-2 text-xs text-slate-500 font-mono mt-0.5">
@@ -424,6 +439,56 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
                       </div>
                     </div>
                   </div>
+
+                  {/* Clean Energy & Decarbonization Ledger */}
+                  {(() => {
+                    const cleanKwh = report.technical.first_year_generation_kwh || 4800
+                    return (
+                      <div className="p-4 sm:p-5 rounded-2xl border border-orange-200 bg-orange-50/50 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200/60 pb-2">
+                          <div className="flex items-center gap-2">
+                            <Leaf className="w-4 h-4 text-[#FE5A01]" />
+                            <h5 className="font-extrabold text-xs uppercase tracking-wider text-neutral-900">
+                              Clean Energy & Decarbonization Ledger
+                            </h5>
+                          </div>
+                          <span className="text-[10px] font-bold text-[#c2410c] bg-white border border-orange-200 px-2 py-0.5 rounded-full">
+                            India CEA Standard: 0.82 kg CO₂/kWh
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="bg-white/90 p-3 rounded-xl border border-orange-100 shadow-2xs">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual Clean Output</span>
+                            <span className="text-base font-extrabold text-neutral-950">{cleanKwh.toLocaleString()} kWh/yr</span>
+                            <span className="text-[10px] text-neutral-500 block mt-0.5">Zero tailpipe emissions</span>
+                          </div>
+                          <div className="bg-white/90 p-3 rounded-xl border border-orange-100 shadow-2xs">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Annual CO₂ Avoided</span>
+                            <span className="text-base font-extrabold text-[#c2410c]">{((cleanKwh * 0.82) / 1000).toFixed(1)} t/yr</span>
+                            <span className="text-[10px] text-neutral-500 block mt-0.5">Displaces thermal power</span>
+                          </div>
+                          <div className="bg-white/90 p-3 rounded-xl border border-orange-100 shadow-2xs">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">25-Yr Lifetime CO₂</span>
+                            <span className="text-base font-extrabold text-[#c2410c]">{((cleanKwh * 0.82 * 25) / 1000).toFixed(1)} Tonnes</span>
+                            <span className="text-[10px] text-neutral-500 block mt-0.5">Cumulative abatement</span>
+                          </div>
+                          <div className="bg-white/90 p-3 rounded-xl border border-orange-100 shadow-2xs">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-0.5">Trees Equivalent</span>
+                            <span className="text-base font-extrabold text-emerald-700">{Math.round((cleanKwh * 0.82) / 22)} Trees/yr</span>
+                            <span className="text-[10px] text-neutral-500 block mt-0.5">Forest absorption rate</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-xs text-neutral-600 bg-white/70 p-2.5 rounded-lg border border-orange-100">
+                          <span className="text-base">⚡</span>
+                          <span>
+                            <strong>Grid Decarbonization Effect:</strong> Displaces ~{Math.round(cleanKwh * 0.55).toLocaleString()} kg of thermal coal combustion each year and provides local feeder peak relief during afternoon air-conditioning surges.
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               )}
 
@@ -678,7 +743,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
             </Button>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

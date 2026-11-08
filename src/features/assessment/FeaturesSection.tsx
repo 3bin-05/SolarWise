@@ -9,11 +9,13 @@ import house2Webp400 from "../../assets/house2-400.webp"
 export interface FeaturesSectionProps {
   onStart: () => void
   onSeeHowItWorks?: () => void
+  onOpenDecarbonizationModal?: (tab: "guides" | "air-quality" | "calculator" | "reduce-emissions") => void
 }
 
 export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
   onStart,
   onSeeHowItWorks,
+  onOpenDecarbonizationModal,
 }) => {
   const handleSeeHowItWorks = () => {
     if (onSeeHowItWorks) {
@@ -140,6 +142,51 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
                     Model DISCOM peak relief, net metering feed-in rates, PM Surya Ghar subsidy (up to ₹78,000), and 25-yr ROI.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Interactive Decarbonization Suite Quick Actions */}
+            <div className="mb-8 w-full max-w-lg p-3 rounded-xl bg-orange-50/70 border border-orange-200/80 shadow-2xs">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#c2410c] flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#FE5A01] animate-pulse" />
+                  Explore Decarbonization Tools
+                </span>
+                <span className="text-[11px] text-neutral-500 font-semibold">Interactive Suite</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => onOpenDecarbonizationModal?.("calculator")}
+                  className="px-2.5 py-1.5 rounded-lg bg-white border border-neutral-200 hover:border-[#FE5A01] text-neutral-800 font-medium flex items-center justify-between transition-colors text-left cursor-pointer shadow-2xs hover:shadow-xs"
+                >
+                  <span className="truncate">Carbon Calculator</span>
+                  <span className="text-[#FE5A01] font-bold">→</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenDecarbonizationModal?.("air-quality")}
+                  className="px-2.5 py-1.5 rounded-lg bg-white border border-neutral-200 hover:border-[#FE5A01] text-neutral-800 font-medium flex items-center justify-between transition-colors text-left cursor-pointer shadow-2xs hover:shadow-xs"
+                >
+                  <span className="truncate">Air-Quality Maps</span>
+                  <span className="text-[#FE5A01] font-bold">→</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenDecarbonizationModal?.("guides")}
+                  className="px-2.5 py-1.5 rounded-lg bg-white border border-neutral-200 hover:border-[#FE5A01] text-neutral-800 font-medium flex items-center justify-between transition-colors text-left cursor-pointer shadow-2xs hover:shadow-xs"
+                >
+                  <span className="truncate">Renewables Guides</span>
+                  <span className="text-[#FE5A01] font-bold">→</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenDecarbonizationModal?.("reduce-emissions")}
+                  className="px-2.5 py-1.5 rounded-lg bg-white border border-neutral-200 hover:border-[#FE5A01] text-neutral-800 font-medium flex items-center justify-between transition-colors text-left cursor-pointer shadow-2xs hover:shadow-xs"
+                >
+                  <span className="truncate">Ways to Reduce</span>
+                  <span className="text-[#FE5A01] font-bold">→</span>
+                </button>
               </div>
             </div>
 

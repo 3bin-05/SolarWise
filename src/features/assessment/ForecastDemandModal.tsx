@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
+import { useFocusTrap } from "../../hooks/useFocusTrap"
 import {
   X,
   TrendingUp,
@@ -43,6 +44,8 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
   const [forecastResult, setForecastResult] = useState<ConsumptionForecastResponse | null>(null)
   const [modelCardData, setModelCardData] = useState<ModelCardResponse | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(modalRef, isOpen, onClose)
 
   // Synthesize 12 months history based on current units for demo/initial load
   const syntheticHistory = React.useMemo(() => [
@@ -172,8 +175,20 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
     : currentMonthlyUnits
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="forecast-modal-title"
+        tabIndex={-1}
+        className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 outline-none"
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
           <div className="flex items-center gap-3">
@@ -182,7 +197,7 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white">Future Demand & Seasonal Forecaster</h3>
+                <h3 id="forecast-modal-title" className="text-lg font-bold text-white">Future Demand & Seasonal Forecaster</h3>
                 <Badge variant="outline" className="border-orange-500/30 text-orange-400 text-xs">
                   {forecastResult?.method === "holt_winters_seasonal"
                     ? "Holt-Winters Seasonal"

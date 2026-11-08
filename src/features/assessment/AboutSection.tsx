@@ -10,10 +10,21 @@ import { BookOpen, Wind, Calculator, Leaf, ArrowRight } from "lucide-react"
 
 export interface AboutSectionProps {
   onStart?: () => void
+  onOpenDecarbonizationModal?: (tab: DecarbonizationTab) => void
 }
 
-export const AboutSection: React.FC<AboutSectionProps> = () => {
-  const [modalTab, setModalTab] = useState<DecarbonizationTab | null>(null)
+export const AboutSection: React.FC<AboutSectionProps> = ({
+  onOpenDecarbonizationModal,
+}) => {
+  const [internalTab, setInternalTab] = useState<DecarbonizationTab | null>(null)
+
+  const handleOpen = (tab: DecarbonizationTab) => {
+    if (onOpenDecarbonizationModal) {
+      onOpenDecarbonizationModal(tab)
+    } else {
+      setInternalTab(tab)
+    }
+  }
 
   return (
     <section id="about" className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-center py-12 lg:py-16 overflow-hidden border-t border-neutral-200/50 scroll-mt-20">
@@ -109,7 +120,7 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
                   {/* Tool 1: Renewable Energy Guides */}
                   <button
                     type="button"
-                    onClick={() => setModalTab("guides")}
+                    onClick={() => handleOpen("guides")}
                     className="p-2.5 sm:p-3 rounded-lg bg-white hover:bg-neutral-50 border border-neutral-200 text-left transition-all hover:border-[#FE5A01]/50 hover:shadow-xs group cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -127,7 +138,7 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
                   {/* Tool 2: Local Air-Quality Maps */}
                   <button
                     type="button"
-                    onClick={() => setModalTab("air-quality")}
+                    onClick={() => handleOpen("air-quality")}
                     className="p-2.5 sm:p-3 rounded-lg bg-white hover:bg-neutral-50 border border-neutral-200 text-left transition-all hover:border-[#FE5A01]/50 hover:shadow-xs group cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -145,7 +156,7 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
                   {/* Tool 3: Carbon Calculator */}
                   <button
                     type="button"
-                    onClick={() => setModalTab("calculator")}
+                    onClick={() => handleOpen("calculator")}
                     className="p-2.5 sm:p-3 rounded-lg bg-white hover:bg-neutral-50 border border-neutral-200 text-left transition-all hover:border-amber-500/50 hover:shadow-xs group cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -163,7 +174,7 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
                   {/* Tool 4: Ways to Reduce Emissions */}
                   <button
                     type="button"
-                    onClick={() => setModalTab("reduce-emissions")}
+                    onClick={() => handleOpen("reduce-emissions")}
                     className="p-2.5 sm:p-3 rounded-lg bg-white hover:bg-neutral-50 border border-neutral-200 text-left transition-all hover:border-orange-500/50 hover:shadow-xs group cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -211,12 +222,14 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
         </div>
       </div>
 
-      {/* Interactive Decarbonization Suite Modal */}
-      <DecarbonizationSuiteModal
-        isOpen={Boolean(modalTab)}
-        onClose={() => setModalTab(null)}
-        initialTab={modalTab || "calculator"}
-      />
+      {/* Interactive Decarbonization Suite Modal (standalone fallback) */}
+      {!onOpenDecarbonizationModal && (
+        <DecarbonizationSuiteModal
+          isOpen={Boolean(internalTab)}
+          onClose={() => setInternalTab(null)}
+          initialTab={internalTab || "calculator"}
+        />
+      )}
     </section>
   )
 }

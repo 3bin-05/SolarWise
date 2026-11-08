@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { X } from "lucide-react"
+import { useFocusTrap } from "../../hooks/useFocusTrap"
 import houseAvif1400 from "../../assets/house-1400.avif"
 import houseAvif900 from "../../assets/house-900.avif"
 import houseAvif500 from "../../assets/house-500.avif"
@@ -11,6 +12,7 @@ import { HowItWorksSection } from "./HowItWorksSection"
 import { AboutSection } from "./AboutSection"
 import { FAQSection } from "./FAQSection"
 import { LandingFooter } from "./LandingFooter"
+import { DecarbonizationSuiteModal, DecarbonizationTab } from "./DecarbonizationSuiteModal"
 
 export interface LandingStepProps {
   onStart: () => void
@@ -24,6 +26,9 @@ export const LandingStep: React.FC<LandingStepProps> = ({
   onActiveSectionChange,
 }) => {
   const [showDemoModal, setShowDemoModal] = useState(false)
+  const [decarbModalTab, setDecarbModalTab] = useState<DecarbonizationTab | null>(null)
+  const demoModalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(demoModalRef, showDemoModal, () => setShowDemoModal(false), true)
 
   // Track active section on scroll to update Header navigation
   useEffect(() => {
@@ -113,14 +118,15 @@ export const LandingStep: React.FC<LandingStepProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDemoModal(true)}
-                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all cursor-pointer"
+                aria-label="SolarWise Product Tour (60-second Overview)"
+                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-5 sm:px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all cursor-pointer"
               >
                 <span className="w-5 h-5 rounded-full border border-neutral-900 flex items-center justify-center shrink-0">
                   <svg className="w-2.5 h-2.5 translate-x-px text-neutral-900 fill-neutral-900" viewBox="0 0 24 24">
                     <polygon points="6 4 19 12 6 20" />
                   </svg>
                 </span>
-                Demo
+                Product Tour (60s Overview)
               </button>
             </div>
           </div>
@@ -205,13 +211,17 @@ export const LandingStep: React.FC<LandingStepProps> = ({
       <FeaturesSection
         onStart={onStart}
         onSeeHowItWorks={scrollToHowItWorks}
+        onOpenDecarbonizationModal={setDecarbModalTab}
       />
 
       {/* SECTION 3: How It Works Section with 4 Steps & step1-4.png */}
       <HowItWorksSection />
 
       {/* SECTION 4: About Section strictly matching reference UI design with house3.png */}
-      <AboutSection onStart={onStart} />
+      <AboutSection
+        onStart={onStart}
+        onOpenDecarbonizationModal={setDecarbModalTab}
+      />
 
       {/* SECTION 5: Frequently Asked Questions (FAQ) */}
       <FAQSection />
@@ -240,17 +250,31 @@ export const LandingStep: React.FC<LandingStepProps> = ({
 
       {/* Interactive Demo Walkthrough Modal */}
       {showDemoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-neutral-200 animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDemoModal(false)
+          }}
+        >
+          <div
+            ref={demoModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tour-modal-title"
+            tabIndex={-1}
+            className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-neutral-200 animate-in fade-in zoom-in-95 duration-150 outline-none"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#FE5A01]"></span>
-                <h3 className="font-bold text-lg text-neutral-950">SolarWise Platform Demo</h3>
+                <h3 id="tour-modal-title" className="font-bold text-lg text-neutral-950">
+                  SolarWise Product Tour: 60-Second Overview
+                </h3>
               </div>
               <button
                 onClick={() => setShowDemoModal(false)}
                 className="text-neutral-400 hover:text-neutral-700 p-1 cursor-pointer"
-                aria-label="Close Demo Modal"
+                aria-label="Close Product Tour Modal"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -302,6 +326,13 @@ export const LandingStep: React.FC<LandingStepProps> = ({
           </div>
         </div>
       )}
+
+      {/* Interactive Decarbonization Hub Modal */}
+      <DecarbonizationSuiteModal
+        isOpen={Boolean(decarbModalTab)}
+        onClose={() => setDecarbModalTab(null)}
+        initialTab={decarbModalTab || "calculator"}
+      />
     </div>
   )
 }

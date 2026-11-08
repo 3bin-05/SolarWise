@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../..
 import { MetricCard } from "../../components/solar/MetricCard"
 import { AssumptionPill } from "../../components/solar/AssumptionPill"
 import { ScenarioSimulatorModal } from "./ScenarioSimulatorModal"
+import { JargonTooltip } from "../../components/ui/JargonTooltip"
 
 export interface FinancialTwinStepProps {
   financial: FinancialTwin
@@ -73,10 +74,12 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsScenarioModalOpen(true)}
-                className="gap-1.5 border-orange-200 text-[#c2410c] hover:bg-orange-50 text-xs rounded-lg"
+                title="Simulate rate inflation, panel degradation, battery storage, and 25-yr financial sensitivity"
+                aria-label="Open What-If Scenario Simulator"
+                className="gap-2 border-orange-200/90 bg-white hover:border-[#FE5A01] hover:bg-orange-50/60 text-neutral-800 hover:text-[#c2410c] text-xs font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all active:scale-[0.98] group cursor-pointer"
               >
-                <Sliders className="w-3.5 h-3.5 text-[#c2410c]" />
-                Scenario Simulator
+                <Sliders className="w-3.5 h-3.5 text-[#FE5A01] shrink-0 group-hover:scale-110 transition-transform duration-200" />
+                <span>Scenario Simulator</span>
               </Button>
               <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-[#c2410c] bg-orange-100/70 px-3 py-1 rounded-md border border-orange-200">
                 <ShieldCheck className="h-4 w-4" /> Verified Marginal Model
@@ -126,7 +129,12 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg border border-neutral-200">
                 <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
-                  <span>Self-Consumption Savings</span>
+                  <JargonTooltip
+                    term="Self-Consumption"
+                    definition="Solar units generated and consumed directly inside your home, offsetting high retail electricity tariff slabs directly."
+                  >
+                    <span>Self-Consumption Savings</span>
+                  </JargonTooltip>
                   <span className="font-bold text-[#FE5A01]">Highest Value</span>
                 </div>
                 <div className="text-xl font-extrabold text-neutral-950">
@@ -139,7 +147,12 @@ export const FinancialTwinStep: React.FC<FinancialTwinStepProps> = ({
 
               <div className="bg-white p-4 rounded-lg border border-neutral-200">
                 <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
-                  <span>Export Feed-in Benefit</span>
+                  <JargonTooltip
+                    term="Export Feed-in"
+                    definition="The rate credited by your DISCOM (typically ₹2.50–₹3.50/unit) for surplus electricity exported into the grid."
+                  >
+                    <span>Export Feed-in Benefit</span>
+                  </JargonTooltip>
                   <span className="font-bold text-amber-700">Discounted Tariff</span>
                 </div>
                 <div className="text-xl font-extrabold text-neutral-950">

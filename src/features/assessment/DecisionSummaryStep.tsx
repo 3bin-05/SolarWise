@@ -270,36 +270,77 @@ export const DecisionSummaryStep: React.FC<DecisionSummaryStepProps> = ({
             </div>
           </div>
 
-          {/* Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-neutral-100">
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button variant="outline" size="md" onClick={onBack}>
-                <ArrowLeft className="h-4 w-4 mr-1" /> Back
-              </Button>
-              <Button variant="secondary" size="md" onClick={onRestart}>
-                <RotateCcw className="h-4 w-4 mr-1" /> New Assessment
-              </Button>
+          {/* Action Bar: Elevated Primary CTA & Organized Secondary Groups */}
+          <div className="space-y-4 pt-4 border-t border-neutral-100">
+            {/* Primary Action Banner */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-xl bg-orange-50/70 border border-orange-200/80">
+              <div>
+                <h4 className="font-bold text-sm text-neutral-900">
+                  Ready to proceed with your Solar Transition?
+                </h4>
+                <p className="text-xs text-neutral-600 mt-0.5">
+                  Export your full 25-year engineering dossier with DISCOM net-metering calculations.
+                </p>
+              </div>
               <Button
-                variant="outline"
                 size="md"
-                onClick={() => setIsScenarioModalOpen(true)}
-                className="gap-1.5 border-orange-200 text-[#FE5A01] hover:bg-orange-50"
+                onClick={handleExportClick}
+                className="w-full sm:w-auto bg-[#FE5A01] hover:bg-[#e04f00] text-white font-bold shadow-xs py-2.5 px-5 shrink-0"
               >
-                <Sliders className="h-4 w-4 text-[#FE5A01]" /> What-If Simulator
-              </Button>
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => setIsProviderModalOpen(true)}
-                className="gap-1.5 border-slate-300 text-slate-800 hover:bg-slate-50"
-              >
-                <Users className="h-4 w-4 text-[#FE5A01]" /> Find Installers & Subsidies
+                <Download className="h-4 w-4 mr-1.5" /> Export Feasibility Report
               </Button>
             </div>
 
-            <Button size="md" onClick={handleExportClick} className="w-full sm:w-auto">
-              <Download className="h-4 w-4 mr-1" /> Export Feasibility Report
-            </Button>
+            {/* Secondary Actions: Exploratory Tools & Navigation */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onBack}
+                  className="rounded-lg text-neutral-700 hover:text-neutral-900 border-neutral-300"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                </Button>
+
+                {/* Exploratory Twin Tools (Identical UI & Enhanced UX) */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsScenarioModalOpen(true)}
+                  title="Simulate rate inflation, panel degradation, battery storage, and 25-yr financial sensitivity"
+                  aria-label="Open What-If Scenario Simulator"
+                  className="gap-2 border-orange-200/90 bg-white hover:border-[#FE5A01] hover:bg-orange-50/60 text-neutral-800 hover:text-[#c2410c] text-xs font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all active:scale-[0.98] group cursor-pointer"
+                >
+                  <Sliders className="h-3.5 w-3.5 text-[#FE5A01] shrink-0 group-hover:scale-110 transition-transform duration-200" />
+                  <span>What-If Simulator</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsProviderModalOpen(true)}
+                  title="Browse verified local solar EPC installers, DISCOM net metering rules, and PM Surya Ghar subsidies"
+                  aria-label="Open Installers & Subsidies directory"
+                  className="gap-2 border-orange-200/90 bg-white hover:border-[#FE5A01] hover:bg-orange-50/60 text-neutral-800 hover:text-[#c2410c] text-xs font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all active:scale-[0.98] group cursor-pointer"
+                >
+                  <Users className="h-3.5 w-3.5 text-[#FE5A01] shrink-0 group-hover:scale-110 transition-transform duration-200" />
+                  <span>Installers & Subsidies</span>
+                </Button>
+              </div>
+
+              <div className="w-full sm:w-auto flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRestart}
+                  className="text-neutral-500 hover:text-neutral-800 text-xs"
+                  title="Start fresh assessment"
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> New Assessment
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

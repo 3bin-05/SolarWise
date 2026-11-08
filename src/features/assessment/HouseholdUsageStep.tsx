@@ -154,6 +154,7 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
               <div className="relative">
                 <Input
                   type="number"
+                  aria-label="Monthly electricity consumption in kilowatt hours"
                   value={usage.monthlyUnits}
                   onChange={(e) =>
                     setUsage((prev) => ({
@@ -192,10 +193,39 @@ export const HouseholdUsageStep: React.FC<HouseholdUsageStepProps> = ({
               min="10"
               max="90"
               step="5"
+              aria-label="Daytime electricity usage percentage"
               value={usage.daytimePercentage}
               onChange={(e) => handleDaytimeChange(Number(e.target.value))}
               className="w-full accent-[#FE5A01] cursor-pointer h-2 bg-neutral-200 rounded-lg"
             />
+
+            {/* Dynamic Appliance Translation Guide */}
+            <div className="p-3.5 rounded-xl bg-orange-50/60 border border-orange-200/80 text-xs space-y-1.5">
+              <div className="flex items-center justify-between font-bold text-neutral-900">
+                <span className="flex items-center gap-1.5 text-[#c2410c]">
+                  <Zap className="w-3.5 h-3.5 text-[#FE5A01]" />
+                  {usage.monthlyUnits <= 120
+                    ? "Lifeline / Low Appliance Profile"
+                    : usage.monthlyUnits <= 250
+                    ? "Moderate 2-BHK Household Profile"
+                    : usage.monthlyUnits <= 500
+                    ? "Standard 3-BHK Household Profile"
+                    : "High-Demand Villa / EV Profile"}
+                </span>
+                <span className="text-[10px] text-neutral-500 font-mono">
+                  {usage.monthlyUnits} kWh/mo
+                </span>
+              </div>
+              <p className="text-neutral-600 leading-relaxed">
+                {usage.monthlyUnits <= 120
+                  ? "Covers LED lighting, ceiling fans, 1 double-door refrigerator, and TV. Very low daytime cooling."
+                  : usage.monthlyUnits <= 250
+                  ? "Covers 1 inverter AC (3-4 hrs night), refrigerator, washing machine, TV, and basic electronics."
+                  : usage.monthlyUnits <= 500
+                  ? `Covers 2 split ACs (${usage.daytimePercentage >= 50 ? "daytime cooling" : "nighttime cooling"}), refrigerator, water heater, washing machine, and microwave.`
+                  : "Covers 3+ split ACs running extensively, induction cooking, water pumps, or home EV charging."}
+              </p>
+            </div>
 
             <div className="flex items-start gap-2 text-xs text-neutral-600 bg-white p-3 rounded-lg border border-neutral-200/80">
               <Info className="h-4 w-4 text-[#FE5A01] shrink-0 mt-0.5" />

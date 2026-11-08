@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import {
   CheckCircle2,
   AlertCircle,
@@ -9,12 +9,16 @@ import {
   ShieldCheck,
   Award,
   Wallet,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
 } from "lucide-react"
 import { SolarRecommendation } from "../../types/assessment"
 import { Button } from "../../components/ui/Button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/Card"
 import { MetricCard } from "../../components/solar/MetricCard"
 import { Badge } from "../../components/ui/Badge"
+import { JargonTooltip } from "../../components/ui/JargonTooltip"
 
 export interface SolarRecommendationStepProps {
   recommendation: SolarRecommendation
@@ -31,6 +35,7 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
   const inverter = recommendation.inverterModel
   const battery = recommendation.batteryModel
   const constraints = recommendation.technicalConstraints || []
+  const [isDeepDiveOpen, setIsDeepDiveOpen] = useState(true)
 
   return (
     <div className="max-w-4xl mx-auto py-4 space-y-6">
@@ -57,343 +62,397 @@ export const SolarRecommendationStep: React.FC<SolarRecommendationStepProps> = (
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Key Metric Highlights */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              label="System Capacity"
-              value={recommendation.recommendedCapacityKw}
-              unit="kWp"
-              subtext={`${recommendation.panelCount} × ${recommendation.panelWattage}W Panels`}
-              variant="highlight"
-            />
-            <MetricCard
-              label="Annual Generation"
-              value={recommendation.annualGenerationKwh.toLocaleString()}
-              unit="kWh/yr"
-              subtext="~4.0 Peak Sun Hours/day"
-              variant="default"
-            />
-            <MetricCard
-              label="Estimated Cost Range"
-              value={`₹${(recommendation.estimatedCostMin / 1000).toFixed(0)}k–${(
-                recommendation.estimatedCostMax / 1000
-              ).toFixed(0)}k`}
-              subtext="Turnkey system before subsidy"
-              variant="default"
-            />
-            <MetricCard
-              label="Inverter Sizing"
-              value={`${recommendation.inverterRatingKw} kW`}
-              subtext={recommendation.batteryRecommended ? "Hybrid Inverter" : "String Inverter"}
-              variant="default"
-            />
+          {/* TIER 1: Executive Summary Card */}
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-orange-50/80 via-white to-amber-50/40 border border-orange-200/90 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#c2410c] flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> Executive Solar Engineering Summary
+              </span>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-100 text-[#c2410c]">
+                Optimal Sizing
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MetricCard
+                label="System Capacity"
+                value={recommendation.recommendedCapacityKw}
+                unit="kWp"
+                subtext={`${recommendation.panelCount} × ${recommendation.panelWattage}W Panels`}
+                variant="highlight"
+              />
+              <MetricCard
+                label="Annual Generation"
+                value={recommendation.annualGenerationKwh.toLocaleString()}
+                unit="kWh/yr"
+                subtext="~4.0 Peak Sun Hours/day"
+                variant="default"
+              />
+              <MetricCard
+                label="Estimated Cost Range"
+                value={`₹${(recommendation.estimatedCostMin / 1000).toFixed(0)}k–${(
+                  recommendation.estimatedCostMax / 1000
+                ).toFixed(0)}k`}
+                subtext="Turnkey system before subsidy"
+                variant="default"
+              />
+              <MetricCard
+                label="Inverter Sizing"
+                value={`${recommendation.inverterRatingKw} kW`}
+                subtext={recommendation.batteryRecommended ? "Hybrid Inverter" : "String Inverter"}
+                variant="default"
+              />
+            </div>
           </div>
 
-          {/* Detailed Matched Equipment Cards */}
-          <div className="space-y-3 pt-2">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-[#FE5A01]" /> Matched Hardware Components
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Solar Panels Card */}
-              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-500 uppercase">PV Modules</span>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
-                    {recommendation.panelWattage}W Tier-1
-                  </Badge>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-neutral-900 text-sm">
-                    {panel?.model || `${recommendation.panelCount} × Mono PERC Panels`}
-                  </h4>
-                  <p className="text-xs text-neutral-500">
-                    {panel?.manufacturer || "Tier-1 Domestic Manufacturer"}
-                  </p>
-                </div>
-                <div className="pt-1 text-xs text-neutral-600 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Array Count:</span>
-                    <span className="font-medium text-neutral-900">{recommendation.panelCount} panels</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Efficiency:</span>
-                    <span className="font-medium text-neutral-900">
-                      {panel?.efficiency_pct ? `${panel.efficiency_pct}%` : "20.9%"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Performance Life:</span>
-                    <span className="font-medium text-neutral-900">25 Years Linear</span>
-                  </div>
-                </div>
+          {/* TIER 2: Collapsible Deep Dive Header & Toggle */}
+          <div className="border border-neutral-200/90 rounded-2xl overflow-hidden bg-white shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setIsDeepDiveOpen((prev) => !prev)}
+              aria-expanded={isDeepDiveOpen}
+              className="w-full flex items-center justify-between p-4 bg-neutral-50/80 hover:bg-neutral-100/80 transition-colors text-left cursor-pointer border-b border-neutral-200/60"
+            >
+              <div className="flex items-center gap-2.5">
+                <Cpu className="w-4 h-4 text-[#FE5A01]" />
+                <span className="font-bold text-sm text-neutral-900">
+                  Detailed Engineering Breakdown & Hardware Specs
+                </span>
+                <span className="text-xs text-neutral-500 hidden sm:inline">
+                  (PV modules, inverter phase, brand pairing & constraints)
+                </span>
               </div>
-
-              {/* Inverter Card */}
-              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-500 uppercase">Inverter</span>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
-                    {recommendation.inverterRatingKw} kW Rating
-                  </Badge>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-neutral-900 text-sm">
-                    {inverter?.model || `${recommendation.inverterRatingKw} kW String Inverter`}
-                  </h4>
-                  <p className="text-xs text-neutral-500">
-                    {inverter?.manufacturer || "Grid-Tied MPPT Inverter"}
-                  </p>
-                </div>
-                <div className="pt-1 text-xs text-neutral-600 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Phase:</span>
-                    <span className="font-medium text-neutral-900">
-                      {inverter?.phase === "three-phase" || recommendation.recommendedCapacityKw > 5
-                        ? "Three-Phase 415V"
-                        : "Single-Phase 230V"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>DC/AC Loading:</span>
-                    <span className="font-medium text-neutral-900">
-                      {recommendation.dcAcRatio ? `${recommendation.dcAcRatio}x` : "1.18x"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Peak Efficiency:</span>
-                    <span className="font-medium text-neutral-900">
-                      {inverter?.max_efficiency_pct ? `${inverter.max_efficiency_pct}%` : "98.2%"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Battery Card */}
-              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-500 uppercase">Battery Storage</span>
-                  <Badge
-                    variant={recommendation.batteryRecommended ? "default" : "outline"}
-                    className="text-[10px] px-1.5 py-0.5"
-                  >
-                    {recommendation.batteryRecommended ? "Recommended" : "Not Required"}
-                  </Badge>
-                </div>
-                {recommendation.batteryRecommended ? (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#c2410c]">
+                {isDeepDiveOpen ? (
                   <>
-                    <div>
-                      <h4 className="font-semibold text-neutral-900 text-sm">
-                        {battery?.model || `${recommendation.batteryCapacityKwh} kWh LiFePO4`}
-                      </h4>
-                      <p className="text-xs text-neutral-500">
-                        {battery?.manufacturer || "Lithium Iron Phosphate"}
-                      </p>
-                    </div>
-                    <div className="pt-1 text-xs text-neutral-600 space-y-1">
-                      <div className="flex justify-between">
-                        <span>Nominal Capacity:</span>
-                        <span className="font-medium text-neutral-900">
-                          {recommendation.batteryCapacityKwh} kWh
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Chemistry:</span>
-                        <span className="font-medium text-neutral-900">LiFePO4 (6000 cycles)</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Depth of Discharge:</span>
-                        <span className="font-medium text-neutral-900">90% DoD</span>
-                      </div>
-                    </div>
+                    <span>Hide Details</span>
+                    <ChevronUp className="w-4 h-4" />
                   </>
                 ) : (
                   <>
-                    <div>
-                      <h4 className="font-semibold text-neutral-800 text-sm">Pure Grid-Tied System</h4>
-                      <p className="text-xs text-neutral-500">No chemical battery required</p>
-                    </div>
-                    <p className="text-[11px] text-neutral-500 leading-relaxed pt-1">
-                      Low outage frequency makes battery capital expense (₹80k+) unviable. Net metering acts
-                      as a virtual battery without maintenance.
-                    </p>
+                    <span>Expand Details</span>
+                    <ChevronDown className="w-4 h-4" />
                   </>
                 )}
-              </div>
-            </div>
-          </div>
+              </span>
+            </button>
 
-          {/* Indian Market Brand Lineage & Certified Compatibility */}
-          {recommendation.brandPackage && (
-            <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/40 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200/60 pb-2">
-                <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-[#FE5A01]" />
-                  <span className="font-bold text-xs uppercase tracking-wider text-neutral-900">
-                    Indian Solar Market Brand Pairing — {recommendation.brandPackage.tier_name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {recommendation.brandPackage.almm_dcr_eligible && (
-                    <Badge variant="outline" className="text-[10px] bg-white border-orange-300 text-[#FE5A01] font-semibold">
-                      ✓ ALMM / DCR Eligible
-                    </Badge>
-                  )}
-                  <Badge variant="outline" className="text-[10px] bg-white border-slate-300 text-slate-800">
-                    PVEL Reliability Verified
-                  </Badge>
-                </div>
-              </div>
+            {/* Deep Dive Body */}
+            {isDeepDiveOpen && (
+              <div className="p-4 sm:p-5 space-y-6 animate-in fade-in duration-200">
+                {/* Detailed Matched Equipment Cards */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-2">
+                    <Cpu className="h-4 w-4 text-[#FE5A01]" /> Matched Hardware Components
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Solar Panels Card */}
+                    <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-neutral-500 uppercase">PV Modules</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
+                          {recommendation.panelWattage}W Tier-1
+                        </Badge>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-neutral-900 text-sm">
+                          {panel?.model || `${recommendation.panelCount} × Mono PERC Panels`}
+                        </h4>
+                        <p className="text-xs text-neutral-500">
+                          {panel?.manufacturer || "Tier-1 Domestic Manufacturer"}
+                        </p>
+                      </div>
+                      <div className="pt-1 text-xs text-neutral-600 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Array Count:</span>
+                          <span className="font-medium text-neutral-900">{recommendation.panelCount} panels</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Efficiency:</span>
+                          <span className="font-medium text-neutral-900">
+                            {panel?.efficiency_pct ? `${panel.efficiency_pct}%` : "20.9%"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Performance Life:</span>
+                          <span className="font-medium text-neutral-900">25 Years Linear</span>
+                        </div>
+                      </div>
+                    </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-neutral-700">
-                <div className="space-y-1">
-                  <p className="font-semibold text-neutral-900">
-                    PV Module: <span className="font-normal">{recommendation.brandPackage.panel_brand}</span>
-                  </p>
-                  <p className="text-[11px] text-neutral-600">
-                    {recommendation.brandPackage.pvel_reliability_note}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-semibold text-neutral-900">
-                    Inverter & Control: <span className="font-normal">{recommendation.brandPackage.inverter_brand}</span>
-                  </p>
-                  <p className="text-[11px] text-neutral-600">
-                    {recommendation.brandPackage.compatibility_verdict}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+                    {/* Inverter Card */}
+                    <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-neutral-500 uppercase">Inverter</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
+                          {recommendation.inverterRatingKw} kW Rating
+                        </Badge>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-neutral-900 text-sm">
+                          {inverter?.model || `${recommendation.inverterRatingKw} kW String Inverter`}
+                        </h4>
+                        <p className="text-xs text-neutral-500">
+                          {inverter?.manufacturer || "Grid-Tied MPPT Inverter"}
+                        </p>
+                      </div>
+                      <div className="pt-1 text-xs text-neutral-600 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Phase:</span>
+                          <span className="font-medium text-neutral-900">
+                            {inverter?.phase === "three-phase" || recommendation.recommendedCapacityKw > 5
+                              ? "Three-Phase 415V"
+                              : "Single-Phase 230V"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <JargonTooltip
+                            term="DC/AC Ratio"
+                            definition="The ratio of solar panel peak capacity to inverter output. Optimal loading (1.1x–1.3x) boosts morning and evening yield."
+                          >
+                            <span>DC/AC Loading:</span>
+                          </JargonTooltip>
+                          <span className="font-medium text-neutral-900">
+                            {recommendation.dcAcRatio ? `${recommendation.dcAcRatio}x` : "1.18x"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Peak Efficiency:</span>
+                          <span className="font-medium text-neutral-900">
+                            {inverter?.max_efficiency_pct ? `${inverter.max_efficiency_pct}%` : "98.2%"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-          {/* Budget Analysis & PM Surya Ghar Subsidy Breakdown */}
-          {recommendation.budgetAnalysis && (
-            <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/40 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
-                  <Wallet className="h-4 w-4 text-blue-700" /> Budget Fit & PM Surya Ghar Subsidy Alignment
-                </span>
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] uppercase font-bold px-2 py-0.5 ${
-                    recommendation.budgetAnalysis.budget_status === "within_budget"
-                      ? "bg-orange-100 text-[#FE5A01] border-orange-300"
-                      : recommendation.budgetAnalysis.budget_status === "stretched"
-                      ? "bg-amber-100 text-amber-800 border-amber-300"
-                      : "bg-blue-100 text-blue-800 border-blue-300"
-                  }`}
-                >
-                  {recommendation.budgetAnalysis.budget_status.replace("_", " ")}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
-                <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
-                  <span className="text-neutral-500 block text-[11px]">Turnkey System Cost</span>
-                  <span className="font-bold text-neutral-900 text-sm">
-                    ₹{recommendation.budgetAnalysis.estimated_turnkey_cost.toLocaleString()}
-                  </span>
+                    {/* Battery Card */}
+                    <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-neutral-500 uppercase">Battery Storage</span>
+                        <Badge
+                          variant={recommendation.batteryRecommended ? "default" : "outline"}
+                          className="text-[10px] px-1.5 py-0.5"
+                        >
+                          {recommendation.batteryRecommended ? "Recommended" : "Not Required"}
+                        </Badge>
+                      </div>
+                      {recommendation.batteryRecommended ? (
+                        <>
+                          <div>
+                            <h4 className="font-semibold text-neutral-900 text-sm">
+                              {battery?.model || `${recommendation.batteryCapacityKwh} kWh LiFePO4`}
+                            </h4>
+                            <p className="text-xs text-neutral-500">
+                              {battery?.manufacturer || "Lithium Iron Phosphate"}
+                            </p>
+                          </div>
+                          <div className="pt-1 text-xs text-neutral-600 space-y-1">
+                            <div className="flex justify-between">
+                              <span>Nominal Capacity:</span>
+                              <span className="font-medium text-neutral-900">
+                                {recommendation.batteryCapacityKwh} kWh
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Chemistry:</span>
+                              <span className="font-medium text-neutral-900">LiFePO4 (6000 cycles)</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Depth of Discharge:</span>
+                              <span className="font-medium text-neutral-900">90% DoD</span>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <h4 className="font-semibold text-neutral-800 text-sm">Pure Grid-Tied System</h4>
+                            <p className="text-xs text-neutral-500">No chemical battery required</p>
+                          </div>
+                          <p className="text-[11px] text-neutral-500 leading-relaxed pt-1">
+                            Low outage frequency makes battery capital expense (₹80k+) unviable. Net metering acts
+                            as a virtual battery without maintenance.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
-                  <span className="text-[#FE5A01] block text-[11px]">PM Surya Ghar Subsidy</span>
-                  <span className="font-bold text-[#FE5A01] text-sm">
-                    - ₹{recommendation.budgetAnalysis.subsidy_deduction_inr.toLocaleString()}
-                  </span>
-                </div>
-                <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
-                  <span className="text-neutral-500 block text-[11px]">Net Household Outlay</span>
-                  <span className="font-bold text-neutral-950 text-sm">
-                    ₹{recommendation.budgetAnalysis.net_cost_after_subsidy.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              <p className="text-[11px] text-blue-950 pt-1 leading-relaxed">
-                {recommendation.budgetAnalysis.guidance}
-              </p>
-            </div>
-          )}
 
-          {/* Technical Constraints Verification */}
-          {constraints.length > 0 && (
-            <div className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
-              <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#FE5A01]" /> Engineering & Regulatory Constraint Checks
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {constraints.map((c, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3 rounded-lg border text-xs ${
-                      c.status === "pass"
-                        ? "bg-neutral-50/80 border-neutral-200 text-neutral-900"
-                        : "bg-amber-50/50 border-amber-200/80 text-amber-950"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between font-semibold mb-1">
-                      <span>{c.name}</span>
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                          c.status === "pass" ? "bg-orange-100 text-[#FE5A01]" : "bg-amber-200 text-amber-800"
+                {/* Indian Market Brand Lineage & Certified Compatibility */}
+                {recommendation.brandPackage && (
+                  <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/40 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200/60 pb-2">
+                      <div className="flex items-center gap-2">
+                        <Award className="h-4 w-4 text-[#FE5A01]" />
+                        <span className="font-bold text-xs uppercase tracking-wider text-neutral-900">
+                          Indian Solar Market Brand Pairing — {recommendation.brandPackage.tier_name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {recommendation.brandPackage.almm_dcr_eligible && (
+                          <Badge variant="outline" className="text-[10px] bg-white border-orange-300 text-[#FE5A01] font-semibold">
+                            ✓ ALMM / DCR Eligible
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className="text-[10px] bg-white border-slate-300 text-slate-800">
+                          PVEL Reliability Verified
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-neutral-700">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-neutral-900">
+                          PV Module: <span className="font-normal">{recommendation.brandPackage.panel_brand}</span>
+                        </p>
+                        <p className="text-[11px] text-neutral-600">
+                          {recommendation.brandPackage.pvel_reliability_note}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-semibold text-neutral-900">
+                          Inverter & Control: <span className="font-normal">{recommendation.brandPackage.inverter_brand}</span>
+                        </p>
+                        <p className="text-[11px] text-neutral-600">
+                          {recommendation.brandPackage.compatibility_verdict}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Budget Analysis & PM Surya Ghar Subsidy Breakdown */}
+                {recommendation.budgetAnalysis && (
+                  <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
+                        <Wallet className="h-4 w-4 text-blue-700" /> Budget Fit & PM Surya Ghar Subsidy Alignment
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] uppercase font-bold px-2 py-0.5 ${
+                          recommendation.budgetAnalysis.budget_status === "within_budget"
+                            ? "bg-orange-100 text-[#FE5A01] border-orange-300"
+                            : recommendation.budgetAnalysis.budget_status === "stretched"
+                            ? "bg-amber-100 text-amber-800 border-amber-300"
+                            : "bg-blue-100 text-blue-800 border-blue-300"
                         }`}
                       >
-                        {c.status}
-                      </span>
+                        {recommendation.budgetAnalysis.budget_status.replace("_", " ")}
+                      </Badge>
                     </div>
-                    <p className="font-mono text-[11px] opacity-90 mb-0.5">{c.value}</p>
-                    <p className="text-[11px] opacity-80">{c.message}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                      <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+                        <span className="text-neutral-500 block text-[11px]">Turnkey System Cost</span>
+                        <span className="font-bold text-neutral-900 text-sm">
+                          ₹{recommendation.budgetAnalysis.estimated_turnkey_cost.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+                        <span className="text-[#FE5A01] block text-[11px]">PM Surya Ghar Subsidy</span>
+                        <span className="font-bold text-[#FE5A01] text-sm">
+                          - ₹{recommendation.budgetAnalysis.subsidy_deduction_inr.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+                        <span className="text-neutral-500 block text-[11px]">Net Household Outlay</span>
+                        <span className="font-bold text-neutral-950 text-sm">
+                          ₹{recommendation.budgetAnalysis.net_cost_after_subsidy.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-blue-950 pt-1 leading-relaxed">
+                      {recommendation.budgetAnalysis.guidance}
+                    </p>
                   </div>
-                ))}
+                )}
+
+                {/* Technical Constraints Verification */}
+                {constraints.length > 0 && (
+                  <div className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
+                    <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-[#FE5A01]" /> Engineering & Regulatory Constraint Checks
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {constraints.map((c, idx) => (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-lg border text-xs ${
+                            c.status === "pass"
+                              ? "bg-neutral-50/80 border-neutral-200 text-neutral-900"
+                              : "bg-amber-50/50 border-amber-200/80 text-amber-950"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between font-semibold mb-1">
+                            <span>{c.name}</span>
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                c.status === "pass" ? "bg-orange-100 text-[#FE5A01]" : "bg-amber-200 text-amber-800"
+                              }`}
+                            >
+                              {c.status}
+                            </span>
+                          </div>
+                          <p className="font-mono text-[11px] opacity-90 mb-0.5">{c.value}</p>
+                          <p className="text-[11px] opacity-80">{c.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Engineering Reasons & Constraints */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200">
+                    <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2 mb-3">
+                      <CheckCircle2 className="h-4 w-4 text-[#FE5A01]" /> Key Engineering Reasons
+                    </h4>
+                    <ul className="space-y-2 text-xs text-neutral-600">
+                      {recommendation.keyReasons.map((reason, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#FE5A01] shrink-0 mt-1.5" />
+                          <span>{reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200">
+                    <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2 mb-3">
+                      <AlertCircle className="h-4 w-4 text-amber-600" /> Engineering Trade-Offs
+                    </h4>
+                    <ul className="space-y-2 text-xs text-neutral-600">
+                      {recommendation.tradeOffs.map((tradeoff, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-600 shrink-0 mt-1.5" />
+                          <span>{tradeoff}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Alternative System Consideration */}
+                <div className="p-4 rounded-xl border border-neutral-200 bg-white">
+                  <div className="flex items-start gap-3">
+                    <Layers className="h-5 w-5 text-neutral-500 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                        Alternative Configuration Evaluated
+                      </span>
+                      <p className="text-sm font-semibold text-neutral-900 mt-0.5">
+                        {recommendation.alternativeSystem.capacityKw} kW{" "}
+                        {recommendation.alternativeSystem.systemType} System
+                      </p>
+                      <p className="text-xs text-neutral-600 mt-1">
+                        {recommendation.alternativeSystem.reason}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Engineering Reasons & Constraints */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200">
-              <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2 mb-3">
-                <CheckCircle2 className="h-4 w-4 text-[#FE5A01]" /> Key Engineering Reasons
-              </h4>
-              <ul className="space-y-2 text-xs text-neutral-600">
-                {recommendation.keyReasons.map((reason, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#FE5A01] shrink-0 mt-1.5" />
-                    <span>{reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200">
-              <h4 className="font-bold text-neutral-900 text-sm flex items-center gap-2 mb-3">
-                <AlertCircle className="h-4 w-4 text-amber-600" /> Engineering Trade-Offs
-              </h4>
-              <ul className="space-y-2 text-xs text-neutral-600">
-                {recommendation.tradeOffs.map((tradeoff, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-600 shrink-0 mt-1.5" />
-                    <span>{tradeoff}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Alternative System Consideration */}
-          <div className="p-4 rounded-xl border border-neutral-200 bg-white">
-            <div className="flex items-start gap-3">
-              <Layers className="h-5 w-5 text-neutral-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-                  Alternative Configuration Evaluated
-                </span>
-                <p className="text-sm font-semibold text-neutral-900 mt-0.5">
-                  {recommendation.alternativeSystem.capacityKw} kW{" "}
-                  {recommendation.alternativeSystem.systemType} System
-                </p>
-                <p className="text-xs text-neutral-600 mt-1">
-                  {recommendation.alternativeSystem.reason}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Action Buttons */}

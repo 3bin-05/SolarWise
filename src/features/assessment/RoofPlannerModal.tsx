@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
+import { useFocusTrap } from "../../hooks/useFocusTrap"
 import {
   X,
   Maximize2,
@@ -102,6 +103,8 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
   const [enableObstacles, setEnableObstacles] = useState(true)
   const [layoutResult, setLayoutResult] = useState<any>(null)
   const [isCalculating, setIsCalculating] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(modalRef, isOpen, onClose)
 
   // Compute 2D layout whenever template, orientation, or panel changes
   useEffect(() => {
@@ -153,8 +156,20 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-neutral-200 max-w-4xl w-full max-h-[94vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="roof-planner-title"
+        tabIndex={-1}
+        className="bg-white rounded-2xl shadow-2xl border border-neutral-200 max-w-4xl w-full max-h-[94vh] sm:max-h-[90vh] flex flex-col overflow-hidden outline-none"
+      >
         {/* Modal Header */}
         <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 flex items-center justify-between bg-neutral-50/80">
           <div className="flex items-center gap-2.5">
@@ -162,7 +177,9 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
               <Maximize2 className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="font-bold text-neutral-900 text-lg">Solar Roof Digital Planner</h3>
+              <h3 id="roof-planner-title" className="font-bold text-neutral-900 text-lg">
+                Solar Roof Digital Planner
+              </h3>
               <p className="text-xs text-neutral-500">
                 2D Rooftop geometric layout & panel optimization (Current: {currentAreaSqFt} sq ft)
               </p>

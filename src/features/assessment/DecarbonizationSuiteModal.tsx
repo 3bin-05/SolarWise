@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
+import { useFocusTrap } from "../../hooks/useFocusTrap"
 import {
   X,
   BookOpen,
@@ -15,6 +16,7 @@ import {
   ChevronRight,
   MapPin,
   CheckCircle2,
+  ExternalLink,
 } from "lucide-react"
 
 export type DecarbonizationTab = "guides" | "air-quality" | "calculator" | "reduce-emissions"
@@ -37,6 +39,16 @@ export const DecarbonizationSuiteModal: React.FC<DecarbonizationSuiteModalProps>
 
   // Selected city for Air Quality
   const [selectedCity, setSelectedCity] = useState<string>("Bengaluru")
+  // Household decarbonization scorecard state
+  const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({
+    "01": true,
+    "02": false,
+    "03": false,
+    "04": false,
+    "05": false,
+  })
+  const modalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(modalRef, isOpen, onClose)
 
   // Sync initialTab when modal opens
   useEffect(() => {
@@ -124,8 +136,20 @@ export const DecarbonizationSuiteModal: React.FC<DecarbonizationSuiteModalProps>
   const activeCityInfo = cityAqiData.find((c) => c.city === selectedCity) || cityAqiData[0]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 sm:p-6 overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl border border-neutral-200/90 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 sm:p-6 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="decarb-modal-title"
+        tabIndex={-1}
+        className="bg-white rounded-3xl shadow-2xl border border-neutral-200/90 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 outline-none"
+      >
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-neutral-200/80 bg-neutral-50/70 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -138,7 +162,7 @@ export const DecarbonizationSuiteModal: React.FC<DecarbonizationSuiteModalProps>
                   Hackathon Decarbonization Hub
                 </span>
               </div>
-              <h3 className="font-extrabold text-lg sm:text-xl text-neutral-950 tracking-tight leading-tight mt-0.5">
+              <h3 id="decarb-modal-title" className="font-extrabold text-lg sm:text-xl text-neutral-950 tracking-tight leading-tight mt-0.5">
                 Clean Energy & Decarbonization Suite
               </h3>
             </div>
@@ -377,6 +401,29 @@ export const DecarbonizationSuiteModal: React.FC<DecarbonizationSuiteModalProps>
                 </div>
               </div>
 
+              {/* Visual National AQI Spectrum Bar */}
+              <div className="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-neutral-700">
+                  <span>National AQI Spectrum Analysis</span>
+                  <span className="font-bold text-[#FE5A01]">{activeCityInfo.city}: {activeCityInfo.aqi} AQI ({activeCityInfo.status})</span>
+                </div>
+                {/* Spectrum Track */}
+                <div className="relative w-full h-3.5 rounded-full overflow-hidden bg-gradient-to-r from-emerald-500 via-amber-400 via-orange-500 to-rose-600 shadow-inner">
+                  {/* Pin Marker */}
+                  <div
+                    className="absolute top-0 bottom-0 w-2.5 bg-neutral-950 rounded-full shadow-md border-2 border-white -translate-x-1/2 transition-all duration-300"
+                    style={{ left: `${Math.min(98, Math.max(2, (activeCityInfo.aqi / 300) * 100))}%` }}
+                    title={`AQI Marker: ${activeCityInfo.aqi}`}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] font-bold">
+                  <span className="text-emerald-700">0–50 Good</span>
+                  <span className="text-amber-700">51–100 Moderate</span>
+                  <span className="text-orange-700">101–200 Poor</span>
+                  <span className="text-rose-700">201–300+ Severe</span>
+                </div>
+              </div>
+
               {/* Air Quality Impact Breakdown */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-3.5 rounded-xl bg-orange-50/50 border border-orange-200/60 text-xs">
@@ -422,10 +469,15 @@ export const DecarbonizationSuiteModal: React.FC<DecarbonizationSuiteModalProps>
                   <p className="text-xs text-neutral-600 leading-relaxed mb-3">
                     Learn how the Ministry of New and Renewable Energy (MNRE) provides ₹33,000 for 1 kW, ₹66,000 for 2 kW, and up to ₹78,000 for 3 kW+ direct DBT bank subsidies.
                   </p>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#FE5A01]">
-                    <span>Eligible for all residential connections</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
+                  <a
+                    href="https://pmsuryaghar.gov.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FE5A01] hover:underline cursor-pointer"
+                  >
+                    <span>Official National Portal • MNRE Govt of India</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </div>
 
                 {/* Guide 2 */}
@@ -499,6 +551,32 @@ export const DecarbonizationSuiteModal: React.FC<DecarbonizationSuiteModalProps>
                 </p>
               </div>
 
+              {/* Interactive Decarbonization Scorecard */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#c2410c] block">
+                    Interactive Household Decarbonization Scorecard
+                  </span>
+                  <h5 className="font-extrabold text-base text-neutral-900 mt-0.5">
+                    Your Household Progress: <span className="text-[#FE5A01]">{Math.round((Object.values(completedSteps).filter(Boolean).length / 5) * 100)}% Decarbonized</span>
+                  </h5>
+                  <p className="text-xs text-neutral-600 mt-0.5">
+                    {Object.values(completedSteps).filter(Boolean).length} of 5 actions implemented. Tap cards below to toggle your home&apos;s clean energy readiness.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <div className="w-28 bg-neutral-200 rounded-full h-3.5 overflow-hidden">
+                    <div
+                      className="bg-[#FE5A01] h-full transition-all duration-300"
+                      style={{ width: `${Math.round((Object.values(completedSteps).filter(Boolean).length / 5) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-bold font-mono text-neutral-900">
+                    {Math.round((Object.values(completedSteps).filter(Boolean).length / 5) * 100)}%
+                  </span>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 {[
                   {
@@ -531,22 +609,50 @@ export const DecarbonizationSuiteModal: React.FC<DecarbonizationSuiteModalProps>
                     impact: "Prevents dirty evening peaker grid imports",
                     desc: "Store excess daytime solar generation in LiFePO4 batteries to power your night loads without drawing fossil electricity from the grid.",
                   },
-                ].map((item) => (
-                  <div key={item.step} className="p-4 rounded-xl bg-white border border-neutral-200/90 shadow-2xs flex items-start gap-4">
-                    <span className="font-mono text-base font-extrabold text-[#FE5A01] bg-orange-50 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border border-orange-200">
-                      {item.step}
-                    </span>
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
-                        <h5 className="font-bold text-sm text-neutral-900">{item.title}</h5>
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
-                          <CheckCircle2 className="w-3 h-3" /> {item.impact}
-                        </span>
+                ].map((item) => {
+                  const isChecked = !!completedSteps[item.step]
+                  return (
+                    <div
+                      key={item.step}
+                      onClick={() =>
+                        setCompletedSteps((prev) => ({
+                          ...prev,
+                          [item.step]: !prev[item.step],
+                        }))
+                      }
+                      className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-4 select-none ${
+                        isChecked
+                          ? "bg-orange-50/70 border-orange-300 shadow-xs"
+                          : "bg-white border-neutral-200/90 hover:border-neutral-300 shadow-2xs"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Mark ${item.title} as ${isChecked ? "not completed" : "completed"}`}
+                        className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 mt-1 transition-colors ${
+                          isChecked ? "bg-[#FE5A01] text-white" : "border-2 border-neutral-300 bg-white"
+                        }`}
+                      >
+                        {isChecked && <CheckCircle2 className="w-4 h-4" />}
+                      </button>
+                      <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                          <h5 className="font-bold text-sm text-neutral-900">{item.title}</h5>
+                          <span
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded border ${
+                              isChecked
+                                ? "text-[#c2410c] bg-orange-100 border-orange-200"
+                                : "text-neutral-600 bg-neutral-100 border-neutral-200"
+                            }`}
+                          >
+                            <CheckCircle2 className="w-3 h-3" /> {item.impact}
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-600 leading-relaxed">{item.desc}</p>
                       </div>
-                      <p className="text-xs text-neutral-600 leading-relaxed">{item.desc}</p>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}

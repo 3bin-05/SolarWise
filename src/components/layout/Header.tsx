@@ -1,6 +1,7 @@
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { RotateCcw, Menu, X } from "lucide-react"
 import { Button } from "../ui/Button"
+import { useFocusTrap } from "../../hooks/useFocusTrap"
 
 export const SolarSunBurst: React.FC<{ className?: string }> = ({ className = "w-7 h-7" }) => (
   <svg
@@ -48,6 +49,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showResetModal, setShowResetModal] = useState(false)
+  const resetModalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(resetModalRef, showResetModal, () => setShowResetModal(false), true)
 
   const handleRequestReset = () => {
     if (currentStep > 0) {
@@ -107,6 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={handleRequestReset}
           role="button"
           tabIndex={0}
+          aria-label="SolarWise Home - Return to home or start new assessment"
           onKeyDown={(e) => e.key === "Enter" && handleRequestReset()}
         >
           <SolarSunBurst className="w-8 h-8 shrink-0" />
@@ -122,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
             { id: "home", label: "Home" },
             { id: "features", label: "Features" },
             { id: "how-it-works", label: "How It Works" },
-            { id: "about", label: "About" },
+            { id: "about", label: "Decarbonization" },
             { id: "contact", label: "Contact" },
           ].map(({ id, label }) => {
             const isActive = currentStep === 0 && activeSection === id
@@ -153,7 +157,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="hidden sm:flex items-center gap-3.5">
           {currentStep > 0 ? (
             <>
-              {onScenarioToggle && (
+              {import.meta.env.DEV && onScenarioToggle && (
                 <div className="hidden md:flex items-center gap-2 bg-neutral-100/90 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-neutral-200/80">
                   <span className="text-xs text-neutral-500">Scenario:</span>
                   <span className="text-xs font-semibold text-neutral-800">{scenarioName}</span>
@@ -198,6 +202,8 @@ export const Header: React.FC<HeaderProps> = ({
           className="md:hidden p-2 text-neutral-800 hover:text-neutral-950"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle navigation menu"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-navigation-menu"
         >
           {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -232,7 +238,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => handleNavClick("about")}
             className="block font-medium text-base text-neutral-800 hover:text-neutral-950 py-1"
           >
-            About
+            Decarbonization
           </a>
           <a
             href="#contact"
@@ -272,9 +278,21 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Reset Confirmation Modal */}
       {showResetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 border border-neutral-200">
-            <h3 className="font-bold text-lg text-neutral-950 mb-2">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowResetModal(false)
+          }}
+        >
+          <div
+            ref={resetModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-modal-title"
+            tabIndex={-1}
+            className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 border border-neutral-200 outline-none"
+          >
+            <h3 id="reset-modal-title" className="font-bold text-lg text-neutral-950 mb-2">
               Start New Assessment?
             </h3>
             <p className="text-xs text-neutral-600 mb-6 leading-relaxed">
