@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
           cache-dependency-path: |
             package-lock.json
@@ -32,6 +32,8 @@ jobs:
         run: npm run lint
 
       - name: Run Vitest tests
+        env:
+          NODE_OPTIONS: "--require ./scripts/polyfill-zstd.cjs"
         run: npm run test:run
 
       - name: Build frontend
