@@ -176,7 +176,7 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
@@ -187,24 +187,26 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
         aria-modal="true"
         aria-labelledby="forecast-modal-title"
         tabIndex={-1}
-        className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 outline-none"
+        className="bg-white border border-neutral-200/90 rounded-2xl w-full max-w-4xl max-h-[94vh] sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 outline-none"
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-neutral-200/80 flex items-center justify-between bg-neutral-50/80 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-500/10 text-orange-400 rounded-lg">
-              <TrendingUp className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-orange-100 border border-orange-200/80 text-[#FE5A01] flex items-center justify-center shrink-0">
+              <TrendingUp className="w-5 h-5 text-[#FE5A01]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 id="forecast-modal-title" className="text-lg font-bold text-white">Future Demand & Seasonal Forecaster</h3>
-                <Badge variant="outline" className="border-orange-500/30 text-orange-400 text-xs">
+                <h3 id="forecast-modal-title" className="text-lg font-bold text-neutral-900">
+                  Future Demand & Seasonal Forecaster
+                </h3>
+                <Badge variant="default" className="text-xs">
                   {forecastResult?.method === "holt_winters_seasonal"
                     ? "Holt-Winters Seasonal"
                     : "Empirical Baseline"}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-neutral-500 mt-0.5">
                 12–36 month projection with AC summer cooling surges, appliance growth & 90% confidence bands
               </p>
             </div>
@@ -214,14 +216,15 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setShowModelCard(!showModelCard)}
-              className="text-xs border-slate-700 hover:border-slate-600 gap-1.5"
+              className="text-xs border-neutral-300 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 gap-1.5 rounded-lg cursor-pointer font-semibold shadow-2xs"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
+              <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
               {showModelCard ? "Hide Model Card" : "Model Card & Metrics"}
             </Button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-lg transition-colors cursor-pointer"
+              aria-label="Close Forecaster"
             >
               <X className="w-5 h-5" />
             </button>
@@ -229,56 +232,56 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
           {/* Model Card Drawer / Modal Banner */}
           {showModelCard && (
-            <div className="p-4 bg-slate-950 border border-sky-500/30 rounded-xl space-y-3 text-sm">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div className="p-4 bg-sky-50/60 border border-sky-200 rounded-xl space-y-3 text-sm shadow-2xs">
+              <div className="flex items-center justify-between border-b border-sky-200/70 pb-2">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-sky-400" />
-                  <span className="font-semibold text-white">
+                  <ShieldCheck className="w-4 h-4 text-sky-600" />
+                  <span className="font-bold text-neutral-900">
                     {modelCardData?.model_name || "SolarWise Seasonal Demand Forecaster"} (v{modelCardData?.version || "1.0.0"})
                   </span>
                 </div>
-                <Badge variant="outline" className="text-xs text-sky-400 border-sky-500/30">
+                <Badge variant="outline" className="text-xs text-sky-700 border-sky-300 bg-white font-semibold">
                   {modelCardData?.license || "CC-BY-4.0"}
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-neutral-700">
                 <div>
-                  <span className="text-slate-400">Dataset Source:</span>{" "}
+                  <span className="text-neutral-500 font-medium">Dataset Source:</span>{" "}
                   {modelCardData?.dataset_source || "Prayas Energy Group RECS & BEE National Benchmarks"}
                 </div>
                 <div>
-                  <span className="text-slate-400">Validation Protocol:</span> Zero-leakage chronological split (M1-24 train, M25-36 held-out test)
+                  <span className="text-neutral-500 font-medium">Validation Protocol:</span> Zero-leakage chronological split (M1-24 train, M25-36 held-out test)
                 </div>
               </div>
 
               {/* Benchmark Table */}
               <div className="overflow-x-auto pt-1">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-900 text-slate-400">
+                  <thead className="bg-sky-100/70 text-neutral-700 font-semibold">
                     <tr>
-                      <th className="py-1 px-2 rounded-l">Climate Profile</th>
-                      <th className="py-1 px-2">Naive Baseline MAPE</th>
-                      <th className="py-1 px-2">Model MAPE</th>
-                      <th className="py-1 px-2 rounded-r">Error Reduction</th>
+                      <th className="py-1.5 px-2 rounded-l">Climate Profile</th>
+                      <th className="py-1.5 px-2">Naive Baseline MAPE</th>
+                      <th className="py-1.5 px-2">Model MAPE</th>
+                      <th className="py-1.5 px-2 rounded-r">Error Reduction</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-sky-200/60">
                     {(modelCardData?.metrics_summary || []).map((m, i) => (
-                      <tr key={i} className="hover:bg-slate-900/40">
-                        <td className="py-1.5 px-2 font-medium text-slate-200">{m.climate_zone}</td>
-                        <td className="py-1.5 px-2 text-slate-400">{m.baseline_mape}%</td>
-                        <td className="py-1.5 px-2 text-orange-400 font-semibold">{m.model_mape}%</td>
-                        <td className="py-1.5 px-2 text-sky-400 font-semibold">+{m.improvement_pct}%</td>
+                      <tr key={i} className="hover:bg-sky-100/40">
+                        <td className="py-1.5 px-2 font-medium text-neutral-900">{m.climate_zone}</td>
+                        <td className="py-1.5 px-2 text-neutral-500">{m.baseline_mape}%</td>
+                        <td className="py-1.5 px-2 text-[#c2410c] font-bold">{m.model_mape}%</td>
+                        <td className="py-1.5 px-2 text-sky-700 font-bold">+{m.improvement_pct}%</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <p className="text-[11px] text-slate-400 italic">
+              <p className="text-[11px] text-neutral-500 italic">
                 *The model reduces forecast error by 60–76% compared to naive flat estimations by modeling summer cooling degree days.
               </p>
             </div>
@@ -286,49 +289,49 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
 
           {/* Top Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3 bg-slate-800/40 border border-slate-800 rounded-xl">
-              <span className="text-xs text-slate-400">Current Monthly Avg</span>
-              <p className="text-lg font-bold text-white mt-1">{currentMonthlyUnits} <span className="text-xs font-normal text-slate-400">kWh</span></p>
+            <div className="p-3.5 bg-neutral-50/80 border border-neutral-200/80 rounded-xl shadow-2xs">
+              <span className="text-xs font-semibold text-neutral-500">Current Monthly Avg</span>
+              <p className="text-lg font-bold text-neutral-900 mt-1">{currentMonthlyUnits} <span className="text-xs font-normal text-neutral-500">kWh</span></p>
             </div>
-            <div className="p-3 bg-slate-800/40 border border-orange-500/20 rounded-xl">
-              <span className="text-xs text-orange-400">Forecasted Annual Avg</span>
-              <p className="text-lg font-bold text-orange-300 mt-1">{projectedAvgMonthly} <span className="text-xs font-normal text-slate-400">kWh/mo</span></p>
+            <div className="p-3.5 bg-neutral-50/80 border border-neutral-200/80 rounded-xl shadow-2xs">
+              <span className="text-xs font-semibold text-neutral-500">Forecasted Annual Avg</span>
+              <p className="text-lg font-bold text-[#c2410c] mt-1">{projectedAvgMonthly} <span className="text-xs font-normal text-neutral-500">kWh/mo</span></p>
             </div>
-            <div className="p-3 bg-slate-800/40 border border-amber-500/20 rounded-xl">
-              <span className="text-xs text-amber-400">Summer Peak Month</span>
-              <p className="text-lg font-bold text-amber-300 mt-1">{forecastResult?.peak_monthly_kwh || 0} <span className="text-xs font-normal text-slate-400">kWh</span></p>
+            <div className="p-3.5 bg-neutral-50/80 border border-neutral-200/80 rounded-xl shadow-2xs">
+              <span className="text-xs font-semibold text-neutral-500">Summer Peak Month</span>
+              <p className="text-lg font-bold text-amber-800 mt-1">{forecastResult?.peak_monthly_kwh || 0} <span className="text-xs font-normal text-neutral-500">kWh</span></p>
             </div>
-            <div className="p-3 bg-slate-800/40 border border-sky-500/20 rounded-xl">
-              <span className="text-xs text-sky-400">Model Confidence</span>
-              <p className="text-lg font-bold text-sky-300 mt-1">
+            <div className="p-3.5 bg-neutral-50/80 border border-neutral-200/80 rounded-xl shadow-2xs">
+              <span className="text-xs font-semibold text-neutral-500">Model Confidence</span>
+              <p className="text-lg font-bold text-sky-800 mt-1">
                 {Math.round((forecastResult?.confidence_score || 0.85) * 100)}%
               </p>
             </div>
           </div>
 
           {/* SVG Visualizer */}
-          <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-            <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className="bg-white border border-neutral-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between text-xs text-neutral-500 font-medium">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-0.5 bg-orange-400 inline-block rounded"></span>
-                  <span className="text-slate-200">Seasonal Forecast</span>
+                  <span className="w-3 h-1 bg-[#FE5A01] inline-block rounded"></span>
+                  <span className="text-neutral-900 font-semibold">Seasonal Forecast</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 bg-orange-500/20 inline-block rounded"></span>
+                  <span className="w-3 h-2 bg-orange-500/20 inline-block rounded border border-orange-300"></span>
                   <span>90% Confidence Band</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-0.5 border-t border-dashed border-slate-500 inline-block"></span>
+                  <span className="w-3 h-0.5 border-t border-dashed border-neutral-400 inline-block"></span>
                   <span>Naive Flat Baseline</span>
                 </div>
               </div>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-neutral-500 font-semibold">
                 Horizon: {horizonMonths} Months
               </span>
             </div>
 
-            <div className="relative w-full overflow-hidden">
+            <div className="relative w-full overflow-hidden bg-neutral-50/50 p-2 rounded-xl border border-neutral-100">
               <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-44">
                 {/* Horizontal grid lines */}
                 {[0.25, 0.5, 0.75, 1.0].map((frac, idx) => {
@@ -340,11 +343,11 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                         y1={yVal}
                         x2={chartWidth - 30}
                         y2={yVal}
-                        stroke="#334155"
+                        stroke="#e2e8f0"
                         strokeDasharray="3 3"
-                        strokeWidth="0.5"
+                        strokeWidth="1"
                       />
-                      <text x="5" y={yVal + 3} fill="#64748b" fontSize="8">
+                      <text x="5" y={yVal + 3} fill="#94a3b8" fontSize="8" fontWeight="600">
                         {Math.round(frac * maxVal)}
                       </text>
                     </g>
@@ -352,7 +355,7 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                 })}
 
                 {/* 90% Confidence Interval Band */}
-                {bandPath && <path d={bandPath} fill="#f97316" fillOpacity="0.12" />}
+                {bandPath && <path d={bandPath} fill="#FE5A01" fillOpacity="0.12" />}
 
                 {/* Flat Naive Baseline */}
                 {baselinePath && (
@@ -367,7 +370,7 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
 
                 {/* Forecast Line */}
                 {forecastPath && (
-                  <path d={forecastPath} fill="none" stroke="#f97316" strokeWidth="2.5" />
+                  <path d={forecastPath} fill="none" stroke="#FE5A01" strokeWidth="2.5" />
                 )}
 
                 {/* Monthly Points */}
@@ -376,16 +379,17 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                     <circle
                       cx={getX(idx)}
                       cy={getY(p.forecast_kwh)}
-                      r="3.5"
-                      fill="#f97316"
-                      stroke="#0f172a"
-                      strokeWidth="1.5"
+                      r="4"
+                      fill="#FE5A01"
+                      stroke="#ffffff"
+                      strokeWidth="2"
                     />
                     <text
                       x={getX(idx)}
                       y={chartHeight - 5}
-                      fill="#94a3b8"
+                      fill="#64748b"
                       fontSize="9"
+                      fontWeight="600"
                       textAnchor="middle"
                     >
                       {p.month_name}
@@ -399,17 +403,17 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
           {/* Scenario Controls */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Climate & Growth */}
-            <div className="p-4 bg-slate-800/30 border border-slate-800 rounded-xl space-y-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="p-4 sm:p-5 bg-white border border-neutral-200 rounded-2xl space-y-3.5 shadow-2xs">
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 block">
                 Regional Climate & Trend
               </span>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">Climatic Zone</label>
+                  <label className="text-xs text-neutral-700 font-semibold block mb-1">Climatic Zone</label>
                   <select
                     value={climateZone}
                     onChange={(e) => setClimateZone(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-white border border-neutral-300 rounded-lg px-3 py-1.5 text-xs text-neutral-800 focus:outline-none focus:border-[#FE5A01] shadow-2xs cursor-pointer"
                   >
                     <option value="composite">Composite (Delhi/NCR — Sharp Summer May/Jun)</option>
                     <option value="warm_humid">Warm & Humid (Mumbai/Chennai — Year-round warm)</option>
@@ -420,8 +424,8 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
 
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-slate-300">Annual Demand Growth Rate</span>
-                    <span className="text-orange-400 font-semibold">+{annualGrowthRate}%/yr</span>
+                    <span className="text-neutral-700 font-semibold">Annual Demand Growth Rate</span>
+                    <span className="text-[#c2410c] font-bold">+{annualGrowthRate}%/yr</span>
                   </div>
                   <input
                     type="range"
@@ -430,22 +434,23 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                     step="0.5"
                     value={annualGrowthRate}
                     onChange={(e) => setAnnualGrowthRate(parseFloat(e.target.value))}
-                    className="w-full accent-orange-500"
+                    className="w-full accent-[#FE5A01] cursor-pointer"
+                    aria-label="Annual Demand Growth Rate percentage per year"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">Forecast Horizon</label>
+                  <label className="text-xs text-neutral-700 font-semibold block mb-1">Forecast Horizon</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[12, 24, 36].map((m) => (
                       <button
                         key={m}
                         type="button"
                         onClick={() => setHorizonMonths(m)}
-                        className={`py-1 text-xs rounded-lg border font-medium transition-colors ${
+                        className={`py-1.5 text-xs rounded-lg border font-semibold transition-all cursor-pointer ${
                           horizonMonths === m
-                            ? "bg-orange-500/20 border-orange-500 text-orange-300"
-                            : "border-slate-800 hover:border-slate-700 text-slate-400"
+                            ? "bg-orange-50 border-[#FE5A01] text-[#c2410c] shadow-2xs"
+                            : "bg-white border-neutral-200 hover:border-neutral-300 text-neutral-600 hover:text-neutral-900"
                         }`}
                       >
                         {m} Months
@@ -457,11 +462,11 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
             </div>
 
             {/* Planned Appliance Additions */}
-            <div className="p-4 bg-slate-800/30 border border-slate-800 rounded-xl space-y-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="p-4 sm:p-5 bg-white border border-neutral-200 rounded-2xl space-y-3.5 shadow-2xs">
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 block">
                 Planned Appliance Additions
               </span>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-neutral-500">
                 Toggle anticipated household electrical additions to proactively size solar:
               </p>
 
@@ -469,20 +474,20 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setHasEV(!hasEV)}
-                  className={`w-full p-2.5 rounded-lg border flex items-center justify-between text-left transition-all ${
+                  className={`w-full p-2.5 rounded-xl border flex items-center justify-between text-left transition-all cursor-pointer ${
                     hasEV
-                      ? "bg-orange-500/10 border-orange-500/50 text-white"
-                      : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                      ? "bg-orange-50/80 border-[#FE5A01] text-neutral-900 shadow-2xs"
+                      : "bg-neutral-50/60 border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Car className={`w-4 h-4 ${hasEV ? "text-orange-400" : "text-slate-500"}`} />
+                    <Car className={`w-4 h-4 ${hasEV ? "text-[#FE5A01]" : "text-neutral-400"}`} />
                     <div>
-                      <div className="text-xs font-semibold">Electric Vehicle (4W / 2W)</div>
-                      <div className="text-[11px] text-slate-400">+200 kWh/month charging load</div>
+                      <div className="text-xs font-bold text-neutral-900">Electric Vehicle (4W / 2W)</div>
+                      <div className="text-[11px] text-neutral-500 font-medium">+200 kWh/month charging load</div>
                     </div>
                   </div>
-                  <Badge variant={hasEV ? "default" : "outline"} className="text-[10px]">
+                  <Badge variant={hasEV ? "default" : "outline"} className="text-[10px] font-bold">
                     {hasEV ? "Active" : "+ Add"}
                   </Badge>
                 </button>
@@ -490,20 +495,20 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setHasExtraAC(!hasExtraAC)}
-                  className={`w-full p-2.5 rounded-lg border flex items-center justify-between text-left transition-all ${
+                  className={`w-full p-2.5 rounded-xl border flex items-center justify-between text-left transition-all cursor-pointer ${
                     hasExtraAC
-                      ? "bg-amber-500/10 border-amber-500/50 text-white"
-                      : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                      ? "bg-amber-50/80 border-amber-500 text-neutral-900 shadow-2xs"
+                      : "bg-neutral-50/60 border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Wind className={`w-4 h-4 ${hasExtraAC ? "text-amber-400" : "text-slate-500"}`} />
+                    <Wind className={`w-4 h-4 ${hasExtraAC ? "text-amber-600" : "text-neutral-400"}`} />
                     <div>
-                      <div className="text-xs font-semibold">Additional 1.5-Ton Inverter AC</div>
-                      <div className="text-[11px] text-slate-400">+150 kWh/month summer cooling</div>
+                      <div className="text-xs font-bold text-neutral-900">Additional 1.5-Ton Inverter AC</div>
+                      <div className="text-[11px] text-neutral-500 font-medium">+150 kWh/month summer cooling</div>
                     </div>
                   </div>
-                  <Badge variant={hasExtraAC ? "default" : "outline"} className="text-[10px]">
+                  <Badge variant={hasExtraAC ? "default" : "outline"} className="text-[10px] font-bold">
                     {hasExtraAC ? "Active" : "+ Add"}
                   </Badge>
                 </button>
@@ -511,20 +516,20 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setHasHeatPump(!hasHeatPump)}
-                  className={`w-full p-2.5 rounded-lg border flex items-center justify-between text-left transition-all ${
+                  className={`w-full p-2.5 rounded-xl border flex items-center justify-between text-left transition-all cursor-pointer ${
                     hasHeatPump
-                      ? "bg-sky-500/10 border-sky-500/50 text-white"
-                      : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                      ? "bg-sky-50/80 border-sky-500 text-neutral-900 shadow-2xs"
+                      : "bg-neutral-50/60 border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Flame className={`w-4 h-4 ${hasHeatPump ? "text-sky-400" : "text-slate-500"}`} />
+                    <Flame className={`w-4 h-4 ${hasHeatPump ? "text-sky-600" : "text-neutral-400"}`} />
                     <div>
-                      <div className="text-xs font-semibold">Heat Pump / Induction Range</div>
-                      <div className="text-[11px] text-slate-400">+80 kWh/month water heating</div>
+                      <div className="text-xs font-bold text-neutral-900">Heat Pump / Induction Range</div>
+                      <div className="text-[11px] text-neutral-500 font-medium">+80 kWh/month water heating</div>
                     </div>
                   </div>
-                  <Badge variant={hasHeatPump ? "default" : "outline"} className="text-[10px]">
+                  <Badge variant={hasHeatPump ? "default" : "outline"} className="text-[10px] font-bold">
                     {hasHeatPump ? "Active" : "+ Add"}
                   </Badge>
                 </button>
@@ -534,13 +539,13 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/90 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">
+        <div className="px-6 py-4 border-t border-neutral-200/80 bg-neutral-50/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <div className="text-xs text-neutral-600 font-medium">
             Applying future demand will update assessment consumption to{" "}
-            <span className="font-semibold text-orange-400">{projectedAvgMonthly} kWh/mo</span>.
+            <span className="font-bold text-[#c2410c]">{projectedAvgMonthly} kWh/mo</span>.
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" onClick={onClose} className="border-slate-700 text-xs flex-1 sm:flex-initial">
+            <Button variant="outline" size="sm" onClick={onClose} className="border-neutral-300 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 text-xs rounded-lg font-semibold flex-1 sm:flex-initial cursor-pointer">
               Dismiss
             </Button>
             {onApplyProjectedUnits && (
@@ -552,7 +557,7 @@ export const ForecastDemandModal: React.FC<ForecastDemandModalProps> = ({
                   onApplyProjectedUnits(projectedAvgMonthly)
                   onClose()
                 }}
-                className="bg-[#FE5A01] hover:bg-[#e04f00] text-white text-xs gap-1.5 flex-1 sm:flex-initial"
+                className="bg-[#FE5A01] hover:bg-[#e04f00] text-white text-xs font-bold gap-1.5 flex-1 sm:flex-initial rounded-lg shadow-xs cursor-pointer"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Apply {projectedAvgMonthly} kWh/mo to Sizing
