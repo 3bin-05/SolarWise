@@ -22,7 +22,7 @@
         align-items: center;
         justify-content: center;
         background-color: #fafbfc;
-        transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s;
+        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
       }
 
       #solarwise-preloader.sw-fade-out {
@@ -148,6 +148,10 @@
 
     <script>
       (function() {
+        var startTime = Date.now();
+        var MIN_DISPLAY_MS = 2500; // Guaranteed dwell time of ~2.5 seconds for visual polish
+        var MAX_TIMEOUT_MS = 5000; // Safety fallback for slow or stalled network connections
+
         function dismiss() {
           var preloader = document.getElementById('solarwise-preloader');
           if (preloader && !preloader.classList.contains('sw-fade-out')) {
@@ -156,15 +160,21 @@
               if (preloader && preloader.parentNode) {
                 preloader.parentNode.removeChild(preloader);
               }
-            }, 380);
+            }, 550);
           }
         }
 
+        function scheduleDismiss() {
+          var elapsed = Date.now() - startTime;
+          var remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
+          setTimeout(dismiss, remaining);
+        }
+
         if (document.readyState === 'complete') {
-          dismiss();
+          scheduleDismiss();
         } else {
-          window.addEventListener('load', dismiss);
-          setTimeout(dismiss, 1600); // Fast safety fallback
+          window.addEventListener('load', scheduleDismiss);
+          setTimeout(dismiss, MAX_TIMEOUT_MS);
         }
       })();
     </script>
