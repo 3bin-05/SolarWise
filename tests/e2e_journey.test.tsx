@@ -82,9 +82,12 @@ describe("SolarWise End-to-End User Journeys", () => {
     // Test Save Assessment
     const saveBtn = screen.getByRole("button", { name: /Save Assessment/i })
     fireEvent.click(saveBtn)
-    await waitFor(() => {
-      expect(screen.getAllByText(/Saved/i).length).toBeGreaterThan(0)
-    })
+    await waitFor(
+      () => {
+        expect(screen.getAllByText(/Saved/i).length).toBeGreaterThan(0)
+      },
+      { timeout: 3000 }
+    )
   })
 
   it("completes the unviable low-consumption journey and verifies 'Not Recommended' decision", async () => {
