@@ -242,44 +242,66 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
                   </button>
 
                   {showModeInfo && (
-                    <div
-                      role="tooltip"
-                      className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-72 p-3 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 text-xs text-neutral-700 space-y-2 pointer-events-none"
-                    >
-                      <div className="font-semibold text-neutral-900 border-b border-neutral-100 pb-1 flex items-center gap-1.5">
-                        <Info className="w-3.5 h-3.5 text-[#c2410c]" />
-                        <span>Assessment View Modes</span>
+                    <>
+                      {/* Mobile backdrop to dismiss tooltip on tap */}
+                      <div
+                        className="fixed inset-0 z-40 bg-black/10 sm:bg-transparent"
+                        onClick={() => setShowModeInfo(false)}
+                        aria-hidden="true"
+                      />
+                      <div
+                        role="tooltip"
+                        className="absolute right-0 top-full mt-2 w-[calc(100vw-2.5rem)] sm:w-80 max-w-sm p-3.5 bg-white border border-neutral-200 rounded-xl shadow-xl z-50 text-xs text-neutral-700 space-y-2"
+                      >
+                        <div className="font-semibold text-neutral-900 border-b border-neutral-100 pb-1.5 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Info className="w-3.5 h-3.5 text-[#c2410c]" />
+                            <span>Assessment View Modes</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowModeInfo(false)}
+                            className="sm:hidden text-neutral-400 hover:text-neutral-700 p-0.5"
+                            aria-label="Close mode information"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div>
+                          <span className="font-bold text-[#c2410c]">Guided View:</span>
+                          <span className="text-[11px] text-neutral-500 font-normal ml-1">
+                            (Simple, conversational, stepwise)
+                          </span>
+                          <p className="text-[11px] text-neutral-600 mt-0.5 leading-relaxed">
+                            Conversational walkthrough designed for homeowners seeking straightforward recommendations and plain-language guidance.
+                          </p>
+                        </div>
+                        <div>
+                          <span className="font-bold text-neutral-800">Detailed View:</span>
+                          <span className="text-[11px] text-neutral-500 font-normal ml-1">
+                            (Comprehensive, data-rich, all-metrics)
+                          </span>
+                          <p className="text-[11px] text-neutral-600 mt-0.5 leading-relaxed">
+                            Multi-step engineering flow with in-depth solar calculations, granular tariffs, and full financial twin metrics.
+                          </p>
+                        </div>
+                        <div className="pt-1.5 text-[10px] text-neutral-600 italic border-t border-neutral-100">
+                          You can switch between views anytime without losing your inputs.
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-bold text-[#c2410c]">Guided View:</span>
-                        <span className="text-[11px] text-neutral-500 font-normal ml-1">(Simple, conversational, stepwise)</span>
-                        <p className="text-[11px] text-neutral-600 mt-0.5 leading-relaxed">
-                          Conversational walkthrough designed for homeowners seeking straightforward recommendations and plain-language guidance.
-                        </p>
-                      </div>
-                      <div>
-                        <span className="font-bold text-neutral-800">Detailed View:</span>
-                        <span className="text-[11px] text-neutral-500 font-normal ml-1">(Comprehensive, data-rich, all-metrics)</span>
-                        <p className="text-[11px] text-neutral-600 mt-0.5 leading-relaxed">
-                          Multi-step engineering flow with in-depth solar calculations, granular tariffs, and full financial twin metrics.
-                        </p>
-                      </div>
-                      <div className="pt-1 text-[10px] text-neutral-600 italic border-t border-neutral-100">
-                        You can switch between views anytime without losing your inputs.
-                      </div>
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
 
               {/* Progress metrics when in stepper mode */}
               {assessmentMode === "stepper" && (
-                <div className="flex items-center gap-3 text-xs font-semibold">
+                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 text-xs font-semibold">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#c2410c] text-[11px] font-bold">
                       Step {currentStep} of {totalSteps}
                     </span>
-                    <span className="text-neutral-900 font-bold text-sm tracking-tight hidden sm:inline">
+                    <span className="text-neutral-900 font-bold text-xs sm:text-sm tracking-tight truncate max-w-[150px] sm:max-w-none">
                       {stepLabels[currentStep]}
                     </span>
                   </div>
@@ -304,7 +326,7 @@ export const App: React.FC<AppProps> = ({ initialMode }) => {
             ? "p-0 relative flex flex-col min-h-0"
             : assessmentMode === "conversational"
             ? "p-0 relative flex flex-col min-h-0"
-            : "max-w-6xl mx-auto px-4 py-6"
+            : "max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6"
         }`}
       >
         {currentStep === 0 && (

@@ -153,10 +153,10 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-neutral-200 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl border border-neutral-200 max-w-4xl w-full max-h-[94vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between bg-neutral-50/80">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 flex items-center justify-between bg-neutral-50/80">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg bg-[#FE5A01] text-white flex items-center justify-center font-bold">
               <Maximize2 className="h-4 w-4" />
@@ -177,7 +177,7 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1">
           {/* Controls Bar */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Template Selector */}
@@ -455,12 +455,12 @@ export const RoofPlannerModal: React.FC<RoofPlannerModalProps> = ({
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="px-6 py-4 border-t border-neutral-200 flex items-center justify-between bg-neutral-50/80">
-          <Button variant="outline" size="md" onClick={onClose}>
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 bg-neutral-50/80">
+          <Button variant="outline" size="md" onClick={onClose} className="w-full sm:w-auto order-2 sm:order-1">
             Cancel
           </Button>
 
-          <Button size="md" onClick={handleApply}>
+          <Button size="md" onClick={handleApply} className="w-full sm:w-auto order-1 sm:order-2 text-xs sm:text-sm">
             <Check className="h-4 w-4 mr-1.5" />
             Apply {layoutResult?.gross_roof_area_sqft || selectedTemplate.areaSqFt} sq ft to Assessment
           </Button>

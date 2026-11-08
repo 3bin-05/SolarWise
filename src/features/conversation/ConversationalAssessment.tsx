@@ -509,18 +509,18 @@ export const ConversationalAssessment: React.FC<ConversationalAssessmentProps> =
   const hasDiscrepancy = arithmeticDiff > 10
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex flex-col min-h-[80vh]">
+    <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8 flex flex-col min-h-[80vh]">
       {/* Top Header / Progress Line */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-200/70">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-neutral-200/70">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#FE5A01] animate-pulse"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate max-w-[150px] sm:max-w-none">
               Personal Solar Consultation
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {onScenarioToggle && (
               <button
                 type="button"

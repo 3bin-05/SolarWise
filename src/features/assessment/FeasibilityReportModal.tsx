@@ -145,10 +145,10 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
     report?.summary.verdict_outcome === "Strongly attractive"
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <Card className="w-full max-w-4xl bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+      <Card className="w-full max-w-4xl bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-orange-100 text-[#FE5A01]">
               <ShieldCheck className="h-5 w-5" />
@@ -202,7 +202,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
         </div>
 
         {/* Content body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           {loading ? (
             <div className="py-20 text-center space-y-3">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#FE5A01] border-t-transparent" />
@@ -641,27 +641,27 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
         </div>
 
         {/* Footer toolbar */}
-        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
             <Button
               variant="outline"
               size="sm"
               onClick={handleCopyId}
               disabled={!report}
-              className="text-xs gap-1"
+              className="text-xs gap-1 flex-1 sm:flex-initial"
             >
               <Copy className="h-3.5 w-3.5" />
               {copied ? "Copied ID!" : "Copy Report ID"}
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={handleDownloadJson}
               disabled={!report}
-              className="text-xs gap-1.5 flex-1 sm:flex-initial"
+              className="text-xs gap-1.5 w-full sm:w-auto sm:flex-initial"
             >
               <Download className="h-3.5 w-3.5" />
               Download JSON Docket
@@ -671,7 +671,7 @@ export const FeasibilityReportModal: React.FC<FeasibilityReportModalProps> = ({
               size="sm"
               onClick={handlePrint}
               disabled={!report}
-              className="text-xs gap-1.5 bg-[#FE5A01] hover:bg-[#e04f00] text-white flex-1 sm:flex-initial"
+              className="text-xs gap-1.5 bg-[#FE5A01] hover:bg-[#e04f00] text-white w-full sm:w-auto sm:flex-initial"
             >
               <Printer className="h-3.5 w-3.5" />
               Print / Save as PDF

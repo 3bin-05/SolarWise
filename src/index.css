@@ -48,12 +48,30 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Precise grid background matching Solarwise hero design */
+/* Precise grid background matching Solarwise hero design with mobile-optimized subtle transparency */
 .solar-grid-bg {
   background-color: #fafbfd;
   background-image: 
-    linear-gradient(to right, rgba(210, 222, 235, 0.65) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(210, 222, 235, 0.65) 1px, transparent 1px);
-  background-size: 36px 36px;
+    linear-gradient(to right, rgba(210, 222, 235, 0.16) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(210, 222, 235, 0.16) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@media (min-width: 640px) {
+  .solar-grid-bg {
+    background-size: 32px 32px;
+    background-image: 
+      linear-gradient(to right, rgba(210, 222, 235, 0.35) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(210, 222, 235, 0.35) 1px, transparent 1px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .solar-grid-bg {
+    background-size: 36px 36px;
+    background-image: 
+      linear-gradient(to right, rgba(210, 222, 235, 0.65) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(210, 222, 235, 0.65) 1px, transparent 1px);
+  }
 }
 
