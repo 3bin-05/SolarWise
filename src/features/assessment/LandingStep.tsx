@@ -75,12 +75,12 @@ export const LandingStep: React.FC<LandingStepProps> = ({
   return (
     <div className="relative w-full flex flex-col justify-start">
       {/* SECTION 1: Front Hero Section strictly matching reference UI design */}
-      <section id="home" className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-start overflow-hidden scroll-mt-20">
-        <div className="w-full max-w-[1536px] mx-auto px-6 sm:px-10 lg:px-16 pt-10 lg:pt-14 pb-12 relative flex-1 flex flex-col justify-start">
+      <section id="home" className="relative w-full min-h-0 lg:min-h-[calc(100vh-5rem)] flex flex-col justify-start overflow-hidden scroll-mt-20">
+        <div className="w-full max-w-[1536px] mx-auto px-4 xs:px-6 sm:px-10 lg:px-16 pt-6 sm:pt-10 lg:pt-14 pb-8 sm:pb-12 relative flex-1 flex flex-col justify-start">
           {/* Left Text & CTA Column */}
-          <div className="relative z-20 max-w-2xl lg:max-w-[620px] xl:max-w-[680px] flex flex-col items-start">
+          <div className="relative z-20 w-full max-w-full sm:max-w-2xl lg:max-w-[620px] xl:max-w-[680px] flex flex-col items-start">
             {/* Badge: Clean Energy & Decarbonization */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-6 shadow-2xs backdrop-blur-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-300 bg-white/95 text-xs sm:text-sm font-semibold text-neutral-900 mb-4 sm:mb-6 shadow-2xs backdrop-blur-xs max-w-full truncate">
               {/* Brand Accent Leaf Icon */}
               <svg
                 className="w-4 h-4 text-[#FE5A01] fill-[#FE5A01] shrink-0"
@@ -90,27 +90,29 @@ export const LandingStep: React.FC<LandingStepProps> = ({
                 <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
                 <path d="M2 21c0-3 1.85-5.36 5.08-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
-              <span>Clean Energy & Decarbonization Platform</span>
+              <span className="truncate">Clean Energy & Decarbonization Platform</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[48px] xl:text-[54px] font-extrabold text-neutral-950 tracking-tight leading-[1.12] mb-5">
-              <span className="block whitespace-nowrap">Power Your Home with</span>
-              <span className="block whitespace-nowrap"><span className="text-[#FE5A01]">Clean, Green</span> Energy</span>
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-[48px] xl:text-[54px] font-extrabold text-neutral-950 tracking-tight leading-[1.14] mb-4 sm:mb-5 max-w-full break-words">
+              <span className="block sm:whitespace-nowrap">Power Your Home with</span>
+              <span className="block sm:whitespace-nowrap">
+                <span className="text-[#FE5A01]">Clean, Green</span> Energy
+              </span>
             </h1>
 
             {/* Subheadline Paragraph */}
-            <p className="text-base sm:text-lg text-neutral-600 max-w-[460px] leading-relaxed mb-8">
+            <p className="text-sm sm:text-base lg:text-lg text-neutral-600 max-w-[460px] leading-relaxed mb-6 sm:mb-8">
               Plan, monitor, and optimize your transition to clean energy — with verified rooftop solar engineering, real-time emission tracking, and regional grid metrics.
             </p>
 
             {/* Hero CTA Action Buttons */}
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3 sm:gap-4 w-full xs:w-auto">
               <button
                 type="button"
                 onClick={onStart}
                 aria-label="Start Free Assessment - Get Started"
-                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-lg flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-lg flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer w-full xs:w-auto"
               >
                 Get Started <span className="text-lg leading-none">→</span>
               </button>
@@ -119,7 +121,7 @@ export const LandingStep: React.FC<LandingStepProps> = ({
                 type="button"
                 onClick={() => setShowDemoModal(true)}
                 aria-label="SolarWise Product Tour (60-second Overview)"
-                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-5 sm:px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all cursor-pointer"
+                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-5 sm:px-6 py-3 rounded-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer w-full xs:w-auto"
               >
                 <span className="w-5 h-5 rounded-full border border-neutral-900 flex items-center justify-center shrink-0">
                   <svg className="w-2.5 h-2.5 translate-x-px text-neutral-900 fill-neutral-900" viewBox="0 0 24 24">
@@ -175,12 +177,12 @@ export const LandingStep: React.FC<LandingStepProps> = ({
         </div>
 
         {/* Right House: Mobile / Tablet View */}
-        <div className="lg:hidden w-full flex justify-center mt-6 pointer-events-none select-none z-10 px-6">
+        <div className="lg:hidden w-full flex justify-center mt-6 sm:mt-8 pointer-events-none select-none z-10 px-4 sm:px-6">
           <div
-            className="w-full max-w-lg"
+            className="w-full max-w-[420px] sm:max-w-lg"
             style={{
-              WebkitMaskImage: "linear-gradient(to bottom, black 65%, rgba(0,0,0,0.4) 85%, transparent 98%)",
-              maskImage: "linear-gradient(to bottom, black 65%, rgba(0,0,0,0.4) 85%, transparent 98%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black 75%, rgba(0,0,0,0.45) 90%, transparent 100%)",
+              maskImage: "linear-gradient(to bottom, black 75%, rgba(0,0,0,0.45) 90%, transparent 100%)",
             }}
           >
             <picture className="w-full h-auto">

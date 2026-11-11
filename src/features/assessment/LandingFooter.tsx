@@ -266,9 +266,9 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ onStart }) => {
       </div>
 
       {/* Landscape Image Layer: footer with smooth top fade effect */}
-      <div className="w-full relative mt-1 sm:mt-2 overflow-hidden select-none pointer-events-none">
+      <div className="w-full relative mt-3 sm:mt-5 overflow-hidden select-none pointer-events-none">
         {/* Soft top gradient fade overlay */}
-        <div className="absolute inset-x-0 top-0 h-14 sm:h-20 bg-gradient-to-b from-[#fff8f3] via-[#fff8f3]/70 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-0 h-6 sm:h-12 bg-gradient-to-b from-[#fff8f3] via-[#fff8f3]/60 to-transparent pointer-events-none z-10" />
 
         <picture className="w-full block">
           <source
@@ -289,20 +289,20 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ onStart }) => {
             loading="lazy"
             decoding="async"
             style={{
-              maskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.85) 30%, black 50%)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.85) 30%, black 50%)",
+              maskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 5%, black 18%, black 88%, rgba(0,0,0,0.85) 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 5%, black 18%, black 88%, rgba(0,0,0,0.85) 100%)",
             }}
-            className="w-full h-auto max-h-[180px] sm:max-h-[220px] md:max-h-[260px] lg:max-h-[300px] xl:max-h-[330px] block object-cover object-top"
+            className="w-full h-[160px] xs:h-[185px] sm:h-[230px] md:h-[270px] lg:h-[310px] xl:h-[340px] block object-cover object-[82%_65%] sm:object-[80%_60%] lg:object-center"
           />
         </picture>
       </div>
 
       {/* Final Dark Wave Bottom Layer (Overlapping footer.png smoothly) */}
-      <div className="relative w-full z-20 -mt-10 sm:-mt-14 md:-mt-18 lg:-mt-22 xl:-mt-24">
+      <div className="relative w-full z-20 -mt-6 sm:-mt-10 md:-mt-14 lg:-mt-18 xl:-mt-22">
         {/* Smooth Organic Wave Transition at top of dark layer */}
         <div className="w-full overflow-hidden leading-none -mb-px">
           <svg
-            className="w-full h-6 sm:h-9 md:h-12 lg:h-14 text-[#171615] fill-current block"
+            className="w-full h-6 sm:h-8 md:h-11 lg:h-14 text-[#171615] fill-current block"
             viewBox="0 0 1440 60"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

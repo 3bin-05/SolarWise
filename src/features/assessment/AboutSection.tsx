@@ -53,7 +53,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
             </p>
 
             {/* 3 Pillar Features Row: Renewables, Emission Tracking, Grid Metrics */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-7 pt-1 w-full max-w-lg">
+            <div className="grid grid-cols-1 xs:grid-cols-3 gap-2.5 sm:gap-4 mb-7 pt-1 w-full max-w-lg">
               {/* Pillar 1: Renewables */}
               <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-white border border-neutral-200/80 shadow-2xs">
                 <div className="w-7 h-7 rounded-md bg-orange-50 border border-orange-200/60 flex items-center justify-center text-[#FE5A01]">

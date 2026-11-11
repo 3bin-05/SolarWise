@@ -53,7 +53,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
             </div>
 
             {/* Main Headline */}
-            <h2 className="text-4xl sm:text-5xl lg:text-[46px] xl:text-[52px] font-extrabold text-neutral-950 tracking-tight leading-[1.12] mb-4">
+            <h2 className="text-3xl xs:text-4xl sm:text-5xl lg:text-[46px] xl:text-[52px] font-extrabold text-neutral-950 tracking-tight leading-[1.14] mb-4">
               Decarbonize Your Home, <br />
               <span className="text-[#FE5A01]">Confidently</span>
             </h2>
