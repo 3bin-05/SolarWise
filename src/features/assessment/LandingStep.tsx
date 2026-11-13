@@ -107,12 +107,12 @@ export const LandingStep: React.FC<LandingStepProps> = ({
             </p>
 
             {/* Hero CTA Action Buttons */}
-            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3 sm:gap-4 w-full xs:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={onStart}
                 aria-label="Start Free Assessment - Get Started"
-                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-lg flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer w-full xs:w-auto"
+                className="bg-[#FE5A01] hover:bg-[#e04f00] active:scale-[0.99] text-white font-semibold text-base px-7 py-3 rounded-lg border border-transparent flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer w-full sm:w-auto shrink-0"
               >
                 Get Started <span className="text-lg leading-none">→</span>
               </button>
@@ -121,7 +121,7 @@ export const LandingStep: React.FC<LandingStepProps> = ({
                 type="button"
                 onClick={() => setShowDemoModal(true)}
                 aria-label="SolarWise Product Tour (60-second Overview)"
-                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-5 sm:px-6 py-3 rounded-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer w-full xs:w-auto"
+                className="bg-white hover:bg-neutral-50 active:scale-[0.99] border border-neutral-900 text-neutral-900 font-semibold text-base px-5 sm:px-6 py-3 rounded-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer w-full sm:w-auto shrink-0"
               >
                 <span className="w-5 h-5 rounded-full border border-neutral-900 flex items-center justify-center shrink-0">
                   <svg className="w-2.5 h-2.5 translate-x-px text-neutral-900 fill-neutral-900" viewBox="0 0 24 24">
